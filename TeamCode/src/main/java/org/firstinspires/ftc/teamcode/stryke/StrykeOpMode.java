@@ -62,6 +62,8 @@ public class StrykeOpMode extends LinearOpMode {
     private DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
 
     boolean halfSpeed = false;
+    int wheelDiam = 6;
+    private int encoderPPR = 7 * 40;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -216,7 +218,7 @@ public class StrykeOpMode extends LinearOpMode {
             resetMotorEncoders();
             setDriveSpeed(leftSpeed, rightSpeed);
             long startTime = System.currentTimeMillis() + timeMs;
-            while(getAverageEncoderPosition(getDriveMotors()) / 1440 * 6 < inches
+            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches
                     && (timeMs < 0 || System.currentTimeMillis() - startTime < timeMs))
                 idle();
         } catch (InterruptedException e) {
