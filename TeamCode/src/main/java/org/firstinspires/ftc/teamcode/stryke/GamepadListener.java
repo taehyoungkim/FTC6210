@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.stryke;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
