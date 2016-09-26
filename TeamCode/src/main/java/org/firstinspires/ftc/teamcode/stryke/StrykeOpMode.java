@@ -59,7 +59,7 @@ public class StrykeOpMode extends LinearOpMode {
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
 
-    private DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
+    public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -145,13 +145,17 @@ public class StrykeOpMode extends LinearOpMode {
 
     public int getAverageEncoderPosition(boolean ignoreSign, DcMotor... motors) {
         int total = 0;
+        int numMotors = motors.length;
         for(DcMotor motor : motors){
+            if(motor.getCurrentPosition() == -1) {
+                numMotors --;
+            } else
             if(ignoreSign)
                 total += Math.abs(motor.getCurrentPosition());
             else
                 total += motor.getCurrentPosition();
         }
-        return total/motors.length;
+        return total/numMotors;
     }
 
     public DcMotor[] getDriveMotors(){
