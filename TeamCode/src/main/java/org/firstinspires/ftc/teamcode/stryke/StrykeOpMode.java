@@ -40,19 +40,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-/**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a PushBot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
-
 @TeleOp(name="Main Tele-Op", group="Linear Opmode")  // @Autonomous(...) is the other common choice
 public class StrykeOpMode extends LinearOpMode {
 
@@ -60,6 +47,7 @@ public class StrykeOpMode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
+    public GyroSensor gyroSensor;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -70,11 +58,7 @@ public class StrykeOpMode extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        leftDriveFront = hardwareMap.dcMotor.get("fl");
-        rightDriveFront = hardwareMap.dcMotor.get("fr");
-        leftDriveBack = hardwareMap.dcMotor.get("bl");
-        rightDriveBack = hardwareMap.dcMotor.get("br");
-
+        initHardware();
 
         GamepadListener gp1 = new GamepadListener(gamepad1);
         gp1.setOnReleased(GamepadListener.Button.A, new Runnable() {
@@ -84,25 +68,51 @@ public class StrykeOpMode extends LinearOpMode {
             }
         });
 
+        stopDriveMotors();
+
+        DcMotor lift = hardwareMap.dcMotor.get("lift");
+        DcMotor huger = hardwareMap.dcMotor.get("hug");
+
         waitForStart();
         runtime.reset();
 
+        stopDriveMotors();
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();
 
             gp1.update(gamepad1);
 
+            if(gamepad1.left_trigger > 0.1)
+                huger.setPower(-0.6);
+            else if (gamepad1.left_bumper)
+                huger.setPower(0.6);
+            else huger.setPower(0);
+
+            if(gamepad1.dpad_up)
+                lift.setPower(-0.2);
+            else if(gamepad1.dpad_down)
+                lift.setPower(0.2);
+            else lift.setPower(0);
 
             if(halfSpeed)
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -0.5),
-                            scaleGamepadInput(gamepad1.right_stick_y, 0.5));
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 0.5),
+                        scaleGamepadInput(gamepad1.right_stick_y, -0.5));
             else
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -1),
-                        scaleGamepadInput(gamepad1.right_stick_y, 1));
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 1),
+                        scaleGamepadInput(gamepad1.right_stick_y, -1));
 
             idle();
         }
+        stopDriveMotors();
+    }
+
+    public void initHardware() {
+        leftDriveFront = hardwareMap.dcMotor.get("fl");
+        rightDriveFront = hardwareMap.dcMotor.get("fr");
+        leftDriveBack = hardwareMap.dcMotor.get("bl");
+        rightDriveBack = hardwareMap.dcMotor.get("br");
+        gyroSensor = hardwareMap.gyroSensor.get("gyro");
     }
 
     // **** HELPER METHODS ****
@@ -280,7 +290,7 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public GyroSensor getGyro() {
-        return null;
+        return gyroSensor;
     }
 
     public boolean isGyroInitialized() {
