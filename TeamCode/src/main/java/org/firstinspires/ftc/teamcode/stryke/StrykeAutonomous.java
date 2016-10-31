@@ -161,7 +161,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         if(deltaDeg < 0) // Turning left
             speedScale = -1;
 
-        while(Math.abs(current - target) > 2) {
+        while(Math.abs(Math.abs(target) - Math.abs(current)) > 2) {
             long currentTime = System.currentTimeMillis();
             long deltaT = currentTime - lastTime;
             current = getGyro().getHeading();

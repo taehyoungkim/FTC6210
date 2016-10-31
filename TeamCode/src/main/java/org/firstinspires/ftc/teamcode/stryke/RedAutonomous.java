@@ -5,14 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
 /**
  * Created by Taehyoung Kim on 10/27/16.
  */
 
-@Autonomous(name = "Blue Autonomous", group = "Auto")
-public class BlueAutonomous extends StrykeAutonomous {
+@Autonomous(name = "Red Autonomous", group = "Auto")
+public class RedAutonomous extends StrykeAutonomous {
     private OpticalDistanceSensor ods;
     private ModernRoboticsI2cRangeSensor range;
     //private ColorSensor beaconColor;
@@ -46,13 +44,13 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Positioning to shoot the ball");
         telemetry.update();
-        encoderDrive(37, -0.15, getDriveMotors());
-        //driveDistance(20, 0.25, 3000);
+        encoderDrive(30, -0.25, getDriveMotors());
+        //driveDistance(20, 0.25);
         //TODO: SHOOT
 
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
-        pidGyroTurn(45);
+        pidGyroTurn(315);
         sleep(1000);
 
 
@@ -65,37 +63,23 @@ public class BlueAutonomous extends StrykeAutonomous {
 
 
         //turn towards the beacon
-
-
-        pidGyroTurn(20);
-
+        pidGyroTurn(340);
 
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
         //align until the robot is 3 cm away from the beacon
-        //align();
+        align();
 
-        while (range.getDistance(DistanceUnit.CM) > 5) {
-            setDriveSpeed(-0.15,0.15);
-            idle();
-        }
-
-        getGyro().calibrate();
-        while(getGyro().isCalibrating()) idle();
-        telemetry.addData("Status", "Re-Calibrating the Gyro!");
-        telemetry.update();
-
-        //encoderDrive(20, -0.15, getDriveMotors());
+        encoderDrive(10, -0.25, getDriveMotors());
         //driveDistance(-10, 0.25); //run into the beacon
 
         //TODO: FIND THE THRESHOLD VALUE FOR BLUE
-       // if(beaconColor.blue() > 8) isBeaconOneCorrect =true;
+        // if(beaconColor.red() > 8) isBeaconOneCorrect =true;
 
         //back away
-        encoderDrive(20, 0.15, getDriveMotors());
+        driveDistance(10, 0.25);
         telemetry.addData("Status", "Turning towards the second beacon");
-        telemetry.update();
-        pidGyroTurn(-90);
+        pidGyroTurn(90);
 
         telemetry.addData("Status", "Driving towards the second beacon");
         telemetry.update();
@@ -104,16 +88,12 @@ public class BlueAutonomous extends StrykeAutonomous {
         //turn towards the beacon
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
+        pidGyroTurn(-90);
+        align();
 
-        encoderDrive(9 , -0.15, getDriveMotors());
-        pidGyroTurn(90);
-        //align();
-
-        while (range.getDistance(DistanceUnit.CM) > 5) {
-            setDriveSpeed(-0.15,0.15);
-            idle();
-        }
-//        if(beaconColor.blue() > 8) isBeaconTwoCorrect = true;
+        encoderDrive(10, -0.25,5000, getDriveMotors()); // drive into beacon
+//
+//        if(beaconColor.red() > 8) isBeaconTwoCorrect = true;
 //
 //        if(!isBeaconOneCorrect){
 //            driveDistance(10, 0.25);
@@ -164,13 +144,6 @@ public class BlueAutonomous extends StrykeAutonomous {
     private void driveToLine() throws InterruptedException {
         while(ods.getLightDetected() < 0.5) {
             setDriveSpeed(-0.15,0.15);
-            idle();
-        }
-    }
-
-    private void turnToLine() throws InterruptedException {
-        while(ods.getLightDetected() < 0.5) {
-            setLeftDriveSpeed(-0.15);
             idle();
         }
     }
