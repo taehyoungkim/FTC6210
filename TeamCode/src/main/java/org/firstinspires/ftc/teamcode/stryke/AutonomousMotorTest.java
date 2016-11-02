@@ -1,45 +1,46 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
+import android.provider.Settings;
+import android.util.Log;
+
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
-@Autonomous(name = "Turn Test!")
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+@Autonomous(name = "Auto Motor Test!", group = "Testing")
 public class AutonomousMotorTest extends StrykeOpMode {
 
 
     int wheelDiam = 6;
     private int encoderPPR = 7 * 40;
 
-    DcMotor m;
-
     @Override
     public void runOpMode() throws InterruptedException {
 
-//        leftDriveFront = hardwareMap.dcMotor.get("fl");
-//        rightDriveFront = hardwareMap.dcMotor.get("fr");
-//        leftDriveBack = hardwareMap.dcMotor.get("bl");
-//        rightDriveBack = hardwareMap.dcMotor.get("br");
+        telemetry.setItemSeparator(" : ");
+        telemetry.addData("Status", "Initializing hardware...");
+        telemetry.update();
+        initHardware();
 
-        leftDriveFront = hardwareMap.dcMotor.get("fl");
-        rightDriveFront = hardwareMap.dcMotor.get("fr");
-        leftDriveBack = hardwareMap.dcMotor.get("bl");
-        rightDriveBack = hardwareMap.dcMotor.get("br");
+        telemetry.addData("Status", "Initializing gyro...");
+        telemetry.update();
+        getGyro().calibrate();
+        while(getGyro().isCalibrating()) idle();
 
-
-
-        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER,getDriveMotors());
-        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, getDriveMotors());
+        telemetry.addData("Status", "Ready.");
+        telemetry.update();
 
         waitForStart();
 
-        encoderDrive(4 * (24 * Math.sqrt(2)) - 2, 0.2, getDriveMotors());
-        Thread.sleep(500);
-        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
-        encoderTurn(45, -0.2, getDriveMotors());
-        Thread.sleep(500);
-        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
-        encoderDrive(12,-0.2, getDriveMotors());
+        telemetry.addData("Status", "Running...");
 
+        pidEncoderDrive(12, getDriveMotors());
+
+        stopDriveMotors();
     }
 
     public void encoderDrive(double inches, double speed, DcMotor... motors) throws InterruptedException {
@@ -53,10 +54,7 @@ public class AutonomousMotorTest extends StrykeOpMode {
             telemetry.update();
             idle();
         }
-
         setDriveSpeed(0, 0);
-
-
     }
 
     public void encoderTurn(double deg, double speed, DcMotor... motors) throws InterruptedException {
@@ -76,19 +74,96 @@ public class AutonomousMotorTest extends StrykeOpMode {
 
     }
 
-    public void pidEncoderTurn(int deltaP, double speed) throws InterruptedException {
+    public void pidEncoderDrive(double inches, DcMotor... motors) throws InterruptedException {
+        int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
+        resetMotorEncoders();
+        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
 
-         while(m.isBusy() || Math.abs(m.getCurrentPosition()) < deltaP) {
-             telemetry.addData("Encoder Value", m.getCurrentPosition());
-             m.setPower(speed);
-             idle();
-         }
-        m.setPower(0);
+        long lastTime = System.currentTimeMillis() - 1;
+        double integral = 0.0;
+        double p = 0.0045; double i = p/2; double d = 0.00;
 
+        int current = Math.abs(getAverageEncoderPosition(motors));
 
+        int target = Math.abs(pulses);
+        double pastError = Math.abs(pulses);
 
+        while(Math.abs(target - current) > 10) {
 
+            long currentTime = System.currentTimeMillis();
+            long deltaT = currentTime - lastTime;
+            current = Math.abs(getAverageEncoderPosition(motors));
+
+            int error = target - current;
+            integral = integral + (error * deltaT);
+            double derivative = (error - pastError)/deltaT;
+            double output = p * error + i * integral + d * derivative;
+
+            output = Range.clip(output, 0.2, 1);
+            if(inches < 0) output *= -1;
+            if(output > 1) output = 1;
+            if(output < -1) output = -1;
+
+            setDriveSpeed(output, -output);
+            telemetry.addData("Output", output + " ");
+            telemetry.addData("P", p * error + " ");
+            telemetry.addData("i", i * integral + " ");
+            telemetry.addData("d", d * derivative + " ");
+            telemetry.update();
+
+            pastError = error;
+            lastTime = currentTime;
+
+            currentTime = System.currentTimeMillis();
+            idle();
+            Thread.sleep(10 - (System.currentTimeMillis() - currentTime) ,0);
+        }
+        setDriveSpeed(0, 0);
     }
 
+    public void pidGyroTurn(int deltaDeg) throws InterruptedException {
+        long lastTime = System.currentTimeMillis() - 1;
+        double integral = 0.0;
+        double p = 0.005; double i = 0.00001; double d = 0.00001;
+
+        int current = getGyro().getHeading();
+
+        int target = current + deltaDeg;
+        double pastError = deltaDeg;
+
+        int speedScale = 1;
+        if(deltaDeg < 0) // Turning left
+            speedScale = -1;
+
+        while(Math.abs(current - target) > 2) {
+            long currentTime = System.currentTimeMillis();
+            long deltaT = currentTime - lastTime;
+            current = getGyro().getHeading();
+
+            int error = target - current;
+            integral = integral + (error * deltaT);
+            double derivative = (error - pastError)/deltaT;
+
+            double output = p * error + i * integral + d * derivative;
+            output = Range.clip(output, 0.25, 1) * speedScale;
+            if(output > 1) output = 1;
+            if(output < -1) output = -1;
+
+            telemetry.addData("Output", output + " ");
+            telemetry.addData("P", p * error + " ");
+            telemetry.addData("i", i * integral + " ");
+            telemetry.addData("d", d * derivative + " ");
+            telemetry.update();
+            setDriveSpeed(output, output);
+
+            pastError = error;
+            lastTime = currentTime;
+
+            currentTime = System.currentTimeMillis();
+            idle();
+            Thread.sleep(10 - (System.currentTimeMillis() - currentTime) ,0);
+        }
+        setDriveSpeed(0,0);
+    }
 }
 

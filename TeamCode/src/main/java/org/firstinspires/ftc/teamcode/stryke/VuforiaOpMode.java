@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.R;
 /**
  * Created by Taehyoung Kim on 10/17/16.
  */
-@TeleOp(name="Camera", group="Linear Opmode")
+@TeleOp(name="Camera", group="Testing")
 public class VuforiaOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

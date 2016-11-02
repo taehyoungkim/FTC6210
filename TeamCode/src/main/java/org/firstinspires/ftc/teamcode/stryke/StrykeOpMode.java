@@ -40,7 +40,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Main Tele-Op", group="Linear Opmode")  // @Autonomous(...) is the other common choice
+@TeleOp(name="Main Tele-Op", group="Linear Opmode")
 public class StrykeOpMode extends LinearOpMode {
 
     /* Declare OpMode members. */

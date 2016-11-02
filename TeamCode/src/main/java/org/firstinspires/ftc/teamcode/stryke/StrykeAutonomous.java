@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
-@Autonomous(name = "GYRO PID!")
+@Autonomous(name = "Autonomous Method Test", group = "Testing")
 public class StrykeAutonomous extends StrykeOpMode {
 
 
@@ -150,36 +150,45 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
         long lastTime = System.currentTimeMillis() - 1;
         double integral = 0.0;
-        double p = 0.0045; double i = 0; double d = 0.00;
+        double p = 0.0025; double i = 0; double d = 0.00;
 
         int current = getGyro().getHeading();
+        int initial = current;
+        int target = initial + deltaDeg;
 
-        int target = current + deltaDeg;
+
         double pastError = deltaDeg;
+        int error = target - current;
 
         int speedScale = 1;
         if(deltaDeg < 0) // Turning left
             speedScale = -1;
 
-        while(Math.abs(Math.abs(target) - Math.abs(current)) > 2) {
+        while(Math.abs(current - target) > 2) { // if error is greater than 2 deg
             long currentTime = System.currentTimeMillis();
             long deltaT = currentTime - lastTime;
             current = getGyro().getHeading();
 
-            int error = target - current;
+            if(current > 180) current = current - 360;
+
+            error = target - current;
+
             integral = integral + (error * deltaT);
             double derivative = (error - pastError)/deltaT;
-
             double output = p * error + i * integral + d * derivative;
 
-            output = Range.clip(output, 0.25, 1) * speedScale;
-            if(output > 1) output = 1;
-            if(output < -1) output = -1;
+
+
+            if(output < 0) output = Range.clip(output, -1, -0.23);
+            else if (output > 0) output = Range.clip(output, 0.23, 1);
 
             telemetry.addData("Output", output + " ");
-            telemetry.addData("P", p * error + " ");
+            telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
             telemetry.addData("i", i * integral + " ");
             telemetry.addData("d", d * derivative + " ");
+            telemetry.addData("Error", error);
+            telemetry.addData("Current", current);
+            telemetry.addData("Actual Delta", initial - current );
             telemetry.update();
             setDriveSpeed(output, output);
 
@@ -190,6 +199,45 @@ public class StrykeAutonomous extends StrykeOpMode {
             idle();
             Thread.sleep(10 - (System.currentTimeMillis() - currentTime) ,0);
         }
-        setDriveSpeed(0,0);
+        stopDriveMotors();
     }
+
+    public void negativePidGyroTurn(int deltaDeg) throws InterruptedException {
+        double p = 0.00025, i = 0, d = 0;
+        deltaDeg = Math.abs(deltaDeg);
+        int current = getGyro().getHeading();
+        int initial = current;
+
+        int target = current - deltaDeg;
+        if (target > 360) target -= 360;
+        if(target < 0) target = 360 + target;
+
+        while(Math.abs(getDistance(target, current)) > 4){ // While we are more than 2 deg. off
+            current = getGyro().getHeading();
+
+            // distance from our desired place to our current
+            int error = getDistance(target, current); // How far away from our desired change in deg.
+
+            double output = p * error;
+            if(output < 0) output = Range.clip(output, -1, -0.25);
+            else if (output > 0) output = Range.clip(output, 0.25, 1);
+
+            telemetry.addData("Output", output + " ");
+            telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
+            telemetry.addData("Error", error);
+            telemetry.addData("Current", current);
+            telemetry.addData("Displacement", getDistance(current, initial));
+            telemetry.update();
+
+            setDriveSpeed(output, output);
+            idle();
+        }
+        stopDriveMotors();
+    }
+
+    public int getDistance(int target, int current) {
+        int o = target - current;
+        return (((o + 180)) % 360) - 180;
+    }
+
 }

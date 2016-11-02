@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 /**
  * Created by Taehyoung Kim on 10/3/16.
  */
-@Autonomous(name="LineFollow Test", group="Linear Op Mode")
+@Autonomous(name="LineFollow Test", group = "Testing")
 public class LineFollow extends StrykeOpMode {
     private OpticalDistanceSensor ods;
 
