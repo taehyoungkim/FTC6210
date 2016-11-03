@@ -150,7 +150,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
         long lastTime = System.currentTimeMillis() - 1;
         double integral = 0.0;
-        double p = 0.0025; double i = 0; double d = 0.00;
+        double p = 0.0004; double i = 0.0007; double d = 0.00;
 
         int current = getGyro().getHeading();
         int initial = current;
@@ -173,14 +173,14 @@ public class StrykeAutonomous extends StrykeOpMode {
 
             error = target - current;
 
-            integral = integral + (error * deltaT);
+            integral = (integral/2) + (5 * deltaT);
             double derivative = (error - pastError)/deltaT;
             double output = p * error + i * integral + d * derivative;
 
 
 
-            if(output < 0) output = Range.clip(output, -1, -0.23);
-            else if (output > 0) output = Range.clip(output, 0.23, 1);
+            if(output < 0) output = Range.clip(output, -1, -0.18);
+            else if (output > 0) output = Range.clip(output, 0.18, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
@@ -203,7 +203,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void negativePidGyroTurn(int deltaDeg) throws InterruptedException {
-        double p = 0.00025, i = 0, d = 0;
+        double p = 0.0004, i = 0, d = 0;
         deltaDeg = Math.abs(deltaDeg);
         int current = getGyro().getHeading();
         int initial = current;
@@ -219,8 +219,8 @@ public class StrykeAutonomous extends StrykeOpMode {
             int error = getDistance(target, current); // How far away from our desired change in deg.
 
             double output = p * error;
-            if(output < 0) output = Range.clip(output, -1, -0.25);
-            else if (output > 0) output = Range.clip(output, 0.25, 1);
+            if(output < 0) output = Range.clip(output, -1, -0.18);
+            else if (output > 0) output = Range.clip(output, 0.18, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
