@@ -55,7 +55,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
         pidGyroTurn(45);
-        sleep(1000);
+        sleep(100);
 
 
         //TODO: THE ROBOT TURNS TOWARDS THE FIRST BEACON, THEN KEEPS ON TURNING INSTEAD OF DRIVING TOWARDS THE LINE...
@@ -65,7 +65,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         //I did not know the alpha value for the white line, used ODS for now.
         driveToLine();
 
-        Thread.sleep(1000);
+        Thread.sleep(100);
 
         // overshoot the line
         encoderDrive(4,-0.15,getDriveMotors());
