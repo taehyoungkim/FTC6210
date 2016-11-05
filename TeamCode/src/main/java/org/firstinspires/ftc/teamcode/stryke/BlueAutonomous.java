@@ -55,7 +55,11 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
         pidGyroTurn(45);
-        sleep(100);
+        sleep(1000);
+
+        telemetry.addData("Heading", getGyro().getHeading());
+        telemetry.update();
+
 
 
         //TODO: THE ROBOT TURNS TOWARDS THE FIRST BEACON, THEN KEEPS ON TURNING INSTEAD OF DRIVING TOWARDS THE LINE...
@@ -68,9 +72,13 @@ public class BlueAutonomous extends StrykeAutonomous {
         Thread.sleep(100);
 
         // overshoot the line
-        encoderDrive(4,-0.15,getDriveMotors());
+        encoderDrive(4,-0.15,100,getDriveMotors());
         // Turn until we are on the left side of the tape
         while(ods.getLightDetected() < 0.5){
+            setDriveSpeed(0.18, 0.18);
+            idle();
+        }
+        while(ods.getLightDetected() > 0.5){
             setDriveSpeed(0.18, 0.18);
             idle();
         }
@@ -148,8 +156,11 @@ public class BlueAutonomous extends StrykeAutonomous {
         }
         stopDriveMotors();
 
+        long lastDebounceTime = System.currentTimeMillis() + 5 * 1000;
+
         encoderDrive(2,0.5,getDriveMotors()); // backup
         if(beaconColor.red()> beaconColor.blue()){
+            while(lastDebounceTime > System.currentTimeMillis()) idle();
             encoderDrive(3,-0.5, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);
