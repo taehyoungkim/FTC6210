@@ -150,7 +150,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
         long lastTime = System.currentTimeMillis() - 1;
         double integral = 0.0;
-        double p = 0.0001; double i = 0.0002; double d = 0.00;
+        double p = 0.0001; double i = 0.0001; double d = 0.00;
 
         int current = getGyro().getHeading();
         int initial = current;
@@ -177,8 +177,8 @@ public class StrykeAutonomous extends StrykeOpMode {
             double derivative = (error - pastError)/deltaT;
             double output = p * error + i * integral + d * derivative;
 
-            if(output < 0) output = Range.clip(output, -1, -0.15);
-            else if (output > 0) output = Range.clip(output, 0.15, 1);
+            if(output < 0) output = Range.clip(output, -1, -0.18);
+            else if (output > 0) output = Range.clip(output, 0.18, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
@@ -201,24 +201,30 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void negativePidGyroTurn(int deltaDeg) throws InterruptedException {
-        double p = 0.0001, i = 0, d = 0;
+        double p = 0.0001, i = -0.0001, d = 0;
         deltaDeg = Math.abs(deltaDeg);
         int current = getGyro().getHeading();
         int initial = current;
+        long currentTime = System.currentTimeMillis();
+        long lastTime = currentTime;
 
         int target = current - deltaDeg;
         if (target > 360) target -= 360;
         if(target < 0) target = 360 + target;
+        double integral = 0;
 
         while(Math.abs(getDistance(target, current)) > 2){ // While we are more than 2 deg. off
             current = getGyro().getHeading();
+            currentTime = System.currentTimeMillis();
+            long deltaT = currentTime - lastTime;
 
             // distance from our desired place to our current
             int error = getDistance(target, current); // How far away from our desired change in deg.
 
-            double output = p * error;
-            if(output < 0) output = Range.clip(output, -1, -0.16);
-            else if (output > 0) output = Range.clip(output, 0.16, 1);
+            integral = integral + (0.5*deltaT);
+            double output = p * error + i * integral;
+            if(output < 0) output = Range.clip(output, -1, -0.18);
+            else if (output > 0) output = Range.clip(output, 0.18, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
@@ -228,6 +234,7 @@ public class StrykeAutonomous extends StrykeOpMode {
             telemetry.update();
 
             setDriveSpeed(output, output);
+            lastTime = currentTime;
             idle();
         }
         stopDriveMotors();

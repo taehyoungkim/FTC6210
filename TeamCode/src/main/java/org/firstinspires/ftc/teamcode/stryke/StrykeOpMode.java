@@ -79,29 +79,35 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.update();
+
 
             gp1.update(gamepad1);
 
-            if(gamepad1.left_trigger > 0.1)
+            if(gamepad2.right_trigger > 0.1)
                 huger.setPower(-0.6);
-            else if (gamepad1.left_bumper)
+            else if (gamepad2.right_bumper)
                 huger.setPower(0.6);
             else huger.setPower(0);
 
-            if(gamepad1.dpad_up)
-                lift.setPower(-0.2);
-            else if(gamepad1.dpad_down)
-                lift.setPower(0.2);
+            if(gamepad2.dpad_up)
+                lift.setPower(-1);
+            else if(gamepad2.dpad_down)
+                lift.setPower(1);
             else lift.setPower(0);
 
-            if(halfSpeed)
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 0.5),
-                        scaleGamepadInput(gamepad1.right_stick_y, -0.5));
-            else
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 1),
-                        scaleGamepadInput(gamepad1.right_stick_y, -1));
+            if(halfSpeed){
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -0.3),
+                        scaleGamepadInput(gamepad1.right_stick_y, 0.3));
+                telemetry.addData("Reversed", "yes");
+            }
 
+            else{
+                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 1),
+                        scaleGamepadInput(gamepad1.left_stick_y, -1));
+                telemetry.addData("Reversed", "no");
+            }
+
+            telemetry.update();
             idle();
         }
         stopDriveMotors();

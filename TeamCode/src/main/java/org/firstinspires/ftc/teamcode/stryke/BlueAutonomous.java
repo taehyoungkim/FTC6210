@@ -139,12 +139,7 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         // Turn until we are on the left side of the tape
         while(ods.getLightDetected() < 0.5){
-            setDriveSpeed(0.25, 0.25);
-            idle();
-        }
-        stopDriveMotors();
-        while(ods.getLightDetected() > 0.5){
-            setDriveSpeed(0.25,0.25);
+            setDriveSpeed(0.2, 0.2);
             idle();
         }
         stopDriveMotors();
