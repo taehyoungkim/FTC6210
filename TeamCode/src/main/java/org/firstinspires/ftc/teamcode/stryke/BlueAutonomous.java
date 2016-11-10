@@ -8,10 +8,6 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-/**
- * Created by Taehyoung Kim on 10/27/16.
- */
-
 @Autonomous(name = "Blue Autonomous", group = "Auto")
 public class BlueAutonomous extends StrykeAutonomous {
     private OpticalDistanceSensor ods;
@@ -107,7 +103,8 @@ public class BlueAutonomous extends StrykeAutonomous {
         // Run into the beacon if not already correct after 5 seconds
         encoderDrive(2,0.5,getDriveMotors()); // backup
         if(beaconColor.red() > beaconColor.blue()){ // we are incorrect!
-            while(firstDebounceTime > System.currentTimeMillis()) idle();
+            //while(firstDebounceTime > System.currentTimeMillis()) idle();
+            Thread.sleep(5000);
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);
@@ -118,10 +115,10 @@ public class BlueAutonomous extends StrykeAutonomous {
         //TODO: TURN TOWARDS 2nd BEACON
 
         //back away
-        encoderDrive(15, 0.15, getDriveMotors());
+        encoderDrive(25, 0.15, getDriveMotors());
         telemetry.addData("Status", "Turning towards the second beacon");
         telemetry.update();
-        negativePidGyroTurn(-85);
+        negativePidGyroTurn(-90);
         stopDriveMotors();
 
         telemetry.addData("Status", "Driving towards the second beacon");
@@ -155,7 +152,8 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         encoderDrive(2,0.5,getDriveMotors()); // backup
         if(beaconColor.red()> beaconColor.blue()){
-            while(lastDebounceTime > System.currentTimeMillis()) idle();
+//            while(lastDebounceTime > System.currentTimeMillis()) idle();
+            Thread.sleep(5000);
             encoderDrive(3,-0.5, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);

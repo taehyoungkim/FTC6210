@@ -150,7 +150,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
         long lastTime = System.currentTimeMillis() - 1;
         double integral = 0.0;
-        double p = 0.0001; double i = 0.0001; double d = 0.00;
+        double p = 0.0055; double i = 0.0005; double d = 0.000;
 
         int current = getGyro().getHeading();
         int initial = current;
@@ -164,7 +164,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         if(deltaDeg < 0) // Turning left
             speedScale = -1;
 
-        while(getDistance(target, current) > 2) { // if error is greater than 2 deg
+        while(getDistance(target, current) > 1) { // if error is greater than 2 deg
             long currentTime = System.currentTimeMillis();
             long deltaT = currentTime - lastTime;
             current = getGyro().getHeading();
@@ -177,11 +177,11 @@ public class StrykeAutonomous extends StrykeOpMode {
             double derivative = (error - pastError)/deltaT;
             double output = p * error + i * integral + d * derivative;
 
-            if(output < 0) output = Range.clip(output, -1, -0.18);
-            else if (output > 0) output = Range.clip(output, 0.18, 1);
+            if(output < 0) output = Range.clip(output, -0.3, -1);
+            else if (output > 0) output = Range.clip(output, 0.3, 1);
 
             telemetry.addData("Output", output + " ");
-            telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
+            telemetry.addData("p", p * error + " ");
             telemetry.addData("i", i * integral + " ");
             telemetry.addData("d", d * derivative + " ");
             telemetry.addData("Error", error);
@@ -195,13 +195,13 @@ public class StrykeAutonomous extends StrykeOpMode {
 
             currentTime = System.currentTimeMillis();
             idle();
-            Thread.sleep(10 - (System.currentTimeMillis() - currentTime) ,0);
+            Thread.sleep(Range.clip(10 - (int) (System.currentTimeMillis() - currentTime), 0, 10) ,0);
         }
         stopDriveMotors();
     }
 
     public void negativePidGyroTurn(int deltaDeg) throws InterruptedException {
-        double p = 0.0001, i = -0.0001, d = 0;
+        double p = 0.0055, i = -0.0005, d = 0;
         deltaDeg = Math.abs(deltaDeg);
         int current = getGyro().getHeading();
         int initial = current;
@@ -223,8 +223,8 @@ public class StrykeAutonomous extends StrykeOpMode {
 
             integral = integral + (0.5*deltaT);
             double output = p * error + i * integral;
-            if(output < 0) output = Range.clip(output, -1, -0.18);
-            else if (output > 0) output = Range.clip(output, 0.18, 1);
+            if(output < 0) output = Range.clip(output, -0.3, -1);
+            else if (output > 0) output = Range.clip(output, 0.3, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
@@ -236,6 +236,7 @@ public class StrykeAutonomous extends StrykeOpMode {
             setDriveSpeed(output, output);
             lastTime = currentTime;
             idle();
+            Thread.sleep(Range.clip(10 - (int) (System.currentTimeMillis() - currentTime), 0, 10) ,0);
         }
         stopDriveMotors();
     }

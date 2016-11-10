@@ -1,19 +1,18 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
-/**
- * Created by Taehyoung Kim on 10/27/16.
- */
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Red Autonomous", group = "Auto")
 public class RedAutonomous extends StrykeAutonomous {
     private OpticalDistanceSensor ods;
     private ModernRoboticsI2cRangeSensor range;
-    //private ColorSensor beaconColor;
+    private ColorSensor beaconColor;
 
     private boolean isBeaconOneCorrect;
     private boolean isBeaconTwoCorrect;
@@ -27,11 +26,11 @@ public class RedAutonomous extends StrykeAutonomous {
         initHardware();
         ods = hardwareMap.opticalDistanceSensor.get("ods");
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
-        //beaconColor = hardwareMap.colorSensor.get("beacon");
+        beaconColor = hardwareMap.colorSensor.get("color");
         isBeaconOneCorrect = false;
         isBeaconTwoCorrect = false;
 
-        //beaconColor.enableLed(false);
+        beaconColor.enableLed(false);
         telemetry.addData("Status", "Initializing gyro...");
         telemetry.update();
         getGyro().calibrate();
@@ -44,14 +43,19 @@ public class RedAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Positioning to shoot the ball");
         telemetry.update();
-        encoderDrive(30, -0.25, getDriveMotors());
-        //driveDistance(20, 0.25);
+        encoderDrive(37, -0.15, getDriveMotors());
+        //driveDistance(20, 0.25, 3000);
         //TODO: SHOOT
 
+        Thread.sleep(200);
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
-        pidGyroTurn(315);
+        negativePidGyroTurn(-45);
         sleep(1000);
+
+        telemetry.addData("Heading", getGyro().getHeading());
+        telemetry.update();
+
 
 
         //TODO: THE ROBOT TURNS TOWARDS THE FIRST BEACON, THEN KEEPS ON TURNING INSTEAD OF DRIVING TOWARDS THE LINE...
@@ -61,39 +65,103 @@ public class RedAutonomous extends StrykeAutonomous {
         //I did not know the alpha value for the white line, used ODS for now.
         driveToLine();
 
+        Thread.sleep(100);
 
-        //turn towards the beacon
-        pidGyroTurn(340);
+        // overshoot the line
+        encoderDrive(4,-0.15,100,getDriveMotors());
+        // Turn until we are on the left side of the tape
+        while(ods.getLightDetected() < 0.5){
+            setDriveSpeed(0.18, 0.18);
+            idle();
+        }
+        while(ods.getLightDetected() > 0.5){
+            setDriveSpeed(0.18, 0.18);
+            idle();
+        }
+        stopDriveMotors();
 
-        telemetry.addData("Status", "Line found! Aligning...");
+        // Drive towards the beacon
+        while (range.getDistance(DistanceUnit.CM) > 4) {
+            telemetry.addData("Range", range.getDistance(DistanceUnit.CM));
+            telemetry.addData("Optical", range.cmOptical());
+            telemetry.update();
+            setDriveSpeed(-0.15,0.15);
+            idle();
+        }
+        stopDriveMotors();
+
+        // Assume we run into the beacon when right towards wall, begin 5 second countdown
+        long firstDebounceTime = System.currentTimeMillis() + 5 * 1000;
+
+        telemetry.addData("Status", "Re-Calibrating the Gyro!");
         telemetry.update();
-        //align until the robot is 3 cm away from the beacon
-        align();
+        Thread.sleep(100);
+        getGyro().calibrate();
+        while(getGyro().isCalibrating()) idle();
+        Thread.sleep(100);
 
-        encoderDrive(10, -0.25, getDriveMotors());
-        //driveDistance(-10, 0.25); //run into the beacon
+        // Run into the beacon if not already correct after 5 seconds
+        encoderDrive(2,0.5,getDriveMotors()); // backup
+        if(beaconColor.blue() > beaconColor.red()){ // we are incorrect!
+            //while(firstDebounceTime > System.currentTimeMillis()) idle();
+            Thread.sleep(5000);
+            encoderDrive(3,-0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+        }
+        stopDriveMotors();
 
-        //TODO: FIND THE THRESHOLD VALUE FOR BLUE
-        // if(beaconColor.red() > 8) isBeaconOneCorrect =true;
+        //TODO: TURN TOWARDS 2nd BEACON
 
         //back away
-        driveDistance(10, 0.25);
+        encoderDrive(25, 0.15, getDriveMotors());
         telemetry.addData("Status", "Turning towards the second beacon");
+        telemetry.update();
         pidGyroTurn(90);
+        stopDriveMotors();
 
         telemetry.addData("Status", "Driving towards the second beacon");
         telemetry.update();
         driveToLine();
+        stopDriveMotors();
 
-        //turn towards the beacon
+        //TODO Seconds Beacon
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
-        pidGyroTurn(-90);
-        align();
+        //Overshoot the line a little
+        encoderDrive(7, -0.18, getDriveMotors());
+        stopDriveMotors();
+        Thread.sleep(100);
 
-        encoderDrive(10, -0.25,5000, getDriveMotors()); // drive into beacon
-//
-//        if(beaconColor.red() > 8) isBeaconTwoCorrect = true;
+        // Turn until we are on the left side of the tape
+        while(ods.getLightDetected() < 0.5){
+            setDriveSpeed(0.2, 0.2);
+            idle();
+        }
+        stopDriveMotors();
+
+        // Drive towards the beacon
+        while (range.getDistance(DistanceUnit.CM) > 4) {
+            setDriveSpeed(-0.18,0.18);
+            idle();
+        }
+        stopDriveMotors();
+
+        long lastDebounceTime = System.currentTimeMillis() + 5 * 1000;
+
+        encoderDrive(2,0.5,getDriveMotors()); // backup
+        if(beaconColor.blue()> beaconColor.red()){
+//            while(lastDebounceTime > System.currentTimeMillis()) idle();
+            Thread.sleep(5000);
+            encoderDrive(3,-0.5, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+        }
+        stopDriveMotors();
+
+//        if(beaconColor.blue() > 8) isBeaconTwoCorrect = true;
 //
 //        if(!isBeaconOneCorrect){
 //            driveDistance(10, 0.25);
@@ -139,12 +207,43 @@ public class RedAutonomous extends StrykeAutonomous {
             }
             idle();
         }
+        stopDriveMotors();
     }
 
     private void driveToLine() throws InterruptedException {
-        while(ods.getLightDetected() < 0.5) {
-            setDriveSpeed(-0.15,0.15);
+        while(ods.getLightDetected() < 0.4) {
+            setDriveSpeed(-0.3,0.3);
+            telemetry.addData("ODS", ods.getLightDetected());
+            telemetry.update();
             idle();
+        }
+        stopDriveMotors();
+    }
+
+    private void turnToLine() throws InterruptedException {
+        while(ods.getLightDetected() < 0.5) {
+            setLeftDriveSpeed(-0.15);
+            idle();
+        }
+        stopDriveMotors();
+    }
+
+    private void solveBlueBeacon(int maxAttempts) throws InterruptedException {
+        solveBlueBeacon(maxAttempts, System.currentTimeMillis());
+    }
+
+    private void solveBlueBeacon(int maxAttempts, long debounceStartTime) throws InterruptedException {
+        if(beaconColor == null) return;
+        while(!(beaconColor.blue() > beaconColor.red()) && maxAttempts >= 1) {
+            telemetry.addData("Status", "Waiting for beacon debounce!");
+            telemetry.update();
+            while (System.currentTimeMillis() < debounceStartTime) idle();
+
+            encoderDrive(5, 0.5, 1000, getDriveMotors());
+            encoderDrive(5, -0.5, 1000, getDriveMotors());
+            if(beaconColor.blue() > beaconColor.red()) return;
+            debounceStartTime = System.currentTimeMillis() + 5 * 1000;
+            maxAttempts--;
         }
     }
 }
