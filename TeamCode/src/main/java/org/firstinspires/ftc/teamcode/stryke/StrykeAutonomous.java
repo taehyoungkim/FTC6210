@@ -153,8 +153,11 @@ public class StrykeAutonomous extends StrykeOpMode {
         double p = 0.0055; double i = 0.0005; double d = 0.000;
 
         int current = getGyro().getHeading();
+        //if(current > 180) current = current - 360;
         int initial = current;
         int target = initial + deltaDeg;
+
+        //if(target > 180) target = target - 360;
 
 
         double pastError = deltaDeg;
@@ -164,7 +167,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         if(deltaDeg < 0) // Turning left
             speedScale = -1;
 
-        while(getDistance(target, current) > 1) { // if error is greater than 2 deg
+        while(Math.abs(getDistance(target, current)) > 1) { // if error is greater than 2 deg
             long currentTime = System.currentTimeMillis();
             long deltaT = currentTime - lastTime;
             current = getGyro().getHeading();
@@ -223,8 +226,8 @@ public class StrykeAutonomous extends StrykeOpMode {
 
             integral = integral + (0.5*deltaT);
             double output = p * error + i * integral;
-            if(output < 0) output = Range.clip(output, -0.3, -1);
-            else if (output > 0) output = Range.clip(output, 0.3, 1);
+            if(output < 0) output = Range.clip(output, -0.28, -1);
+            else if (output > 0) output = Range.clip(output, 0.28, 1);
 
             telemetry.addData("Output", output + " ");
             telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
@@ -241,9 +244,28 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
+    public void turn(int deg, double pow) throws InterruptedException {
+        int current = getGyro().getHeading();
+        int target = current + deg;
+        if (target > 360) target -= 360;
+        if(target < 0) target = 360 + target;
+        boolean turnLeft = getDistance(target, current) < 0; // if we have to turn left
+
+        while(Math.abs(getDistance(target, current)) > 2){
+            current = getGyro().getHeading();
+            if (turnLeft) {
+                setDriveSpeed(-pow, -pow);
+            } else {
+                setDriveSpeed(pow, pow);
+            }
+            idle();
+        }
+    }
+
     public int getDistance(int target, int current) {
         int o = target - current;
         return (((o + 180)) % 360) - 180;
     }
+
 
 }
