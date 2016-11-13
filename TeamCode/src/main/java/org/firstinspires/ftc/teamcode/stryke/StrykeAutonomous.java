@@ -33,6 +33,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
     }
 
+    @Deprecated
     public void pidEncoderDrive(double inches, DcMotor... motors) throws InterruptedException {
         int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
         resetMotorEncoders();
@@ -133,6 +134,8 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
     }
 
+    // RIP
+    @Deprecated
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
         long lastTime = System.currentTimeMillis() - 1;
         double integral = 0.0;
@@ -189,6 +192,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
+    @Deprecated
     public void encoderTurn(double deg, double speed, DcMotor... motors) throws InterruptedException {
         //                    Arc%     * Circumference  / Dist. per rotation * ppr * percent error
         int pulses = (int) ((((deg/360) * (18 * Math.PI) / (6 * Math.PI) * 280) * 1.6) * 1.55);
@@ -232,7 +236,8 @@ public class StrykeAutonomous extends StrykeOpMode {
             Thread.sleep(100);
             encoderDrive(3,0.5,getDriveMotors()); // backup
         }
-
+        stopDriveMotors();
+        Thread.sleep(300);  // Allow for beacon to flash
         while (beaconColor.red() > beaconColor.blue()) {
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
@@ -251,7 +256,7 @@ public class StrykeAutonomous extends StrykeOpMode {
             encoderDrive(3,0.5,getDriveMotors()); // backup
         }
         stopDriveMotors();
-
+        Thread.sleep(300);  // Allow for beacon to flash
         while (beaconColor.blue() > beaconColor.red()) {
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
