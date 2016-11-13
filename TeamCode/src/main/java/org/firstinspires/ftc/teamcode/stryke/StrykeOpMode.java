@@ -32,10 +32,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.stryke;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -48,6 +51,9 @@ public class StrykeOpMode extends LinearOpMode {
 
     public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
     public GyroSensor gyroSensor;
+    public OpticalDistanceSensor ods;
+    public ModernRoboticsI2cRangeSensor range;
+    public ColorSensor beaconColor;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -119,6 +125,9 @@ public class StrykeOpMode extends LinearOpMode {
         leftDriveBack = hardwareMap.dcMotor.get("bl");
         rightDriveBack = hardwareMap.dcMotor.get("br");
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
+        ods = hardwareMap.opticalDistanceSensor.get("ods");
+        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
+        beaconColor = hardwareMap.colorSensor.get("color");
     }
 
     // **** HELPER METHODS ****

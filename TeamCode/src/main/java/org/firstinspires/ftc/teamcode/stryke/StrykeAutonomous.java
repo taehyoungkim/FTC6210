@@ -1,103 +1,36 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
-@Autonomous(name = "Autonomous Method Test", group = "Testing")
-public class StrykeAutonomous extends StrykeOpMode {
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+public class StrykeAutonomous extends StrykeOpMode {
 
     int wheelDiam = 6;
     private int encoderPPR = 7 * 40;
 
-    @Override
-    public void runOpMode() throws InterruptedException {
+    /*
+    ==============================================
+    ================DRIVE METHODS=================
+    ==============================================
+     */
 
-        telemetry.setItemSeparator(" : ");
-        telemetry.addData("Status", "Initializing hardware...");
-        telemetry.update();
-        initHardware();
-
-        telemetry.addData("Status", "Initializing gyro...");
-        telemetry.update();
-        getGyro().calibrate();
-        while(getGyro().isCalibrating()) idle();
-
-        telemetry.addData("Status", "Ready.");
-        telemetry.update();
-
-        waitForStart();
-
-        telemetry.addData("Status", "Running...");
-
-        telemetry.addData("Process", "Driving 6 inches!");
-        telemetry.update();
-        //pidEncoderDrive(6, getDriveMotors());
-
-        //Thread.sleep(1000);
-
-        telemetry.addData("Process", "Turning 1 revolution!");
-        telemetry.update();
-        pidGyroTurn(360);
-
-        Thread.sleep(1000);
-
-        telemetry.addData("Process", "Turning 1 revolution back!");
-        telemetry.update();
-        pidGyroTurn(-360);
-
-        //Thread.sleep(1000);
-
-        telemetry.addData("Process", "Driving back 6 inches!");
-        telemetry.update();
-        //pidEncoderDrive(-6, getDriveMotors());
-
+    public void driveToLine() throws InterruptedException {
+        while(ods.getLightDetected() < 0.4) {
+            setDriveSpeed(-0.25,0.25);
+            telemetry.addData("ODS", ods.getLightDetected());
+            telemetry.update();
+            idle();
+        }
         stopDriveMotors();
     }
-    public void encoderDrive(double inches, double speed, DcMotor... motors) throws InterruptedException {
-        int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
-        resetMotorEncoders();
-        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
-        while(getAverageEncoderPosition(motors) <= pulses) {
-            setDriveSpeed(speed, -speed);
-            telemetry.addData("Target", pulses);
-            telemetry.addData("Current", getAverageEncoderPosition(motors));
-            telemetry.update();
+
+    public void driveToWall(double cm) throws InterruptedException {
+        while (range.getDistance(DistanceUnit.CM) > cm) {
+            setDriveSpeed(-0.18, 0.18);
             idle();
         }
-        setDriveSpeed(0, 0);
-    }
-
-    public void encoderDrive(double inches, double speed, int time, DcMotor... motors) throws InterruptedException {
-        int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
-        resetMotorEncoders();
-        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
-        while(getAverageEncoderPosition(motors) <= pulses || (System.currentTimeMillis() * 1000) < time) {
-            setDriveSpeed(speed, -speed);
-            telemetry.addData("Target", pulses);
-            telemetry.addData("Current", getAverageEncoderPosition(motors));
-            telemetry.update();
-            idle();
-        }
-        setDriveSpeed(0, 0);
-    }
-
-    public void encoderTurn(double deg, double speed, DcMotor... motors) throws InterruptedException {
-        //                    Arc%     * Circumference  / Dist. per rotation * ppr * percent error
-        int pulses = (int) ((((deg/360) * (18 * Math.PI) / (6 * Math.PI) * 280) * 1.6) * 1.55);
-        resetMotorEncoders();
-        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
-        while(getAverageEncoderPosition(motors) <= pulses) {
-            setDriveSpeed(speed, speed);
-            telemetry.addData("Target", pulses);
-            telemetry.addData("Current", getAverageEncoderPosition(motors));
-            telemetry.update();
-            idle();
-        }
-
-        setDriveSpeed(0, 0);
-
     }
 
     public void pidEncoderDrive(double inches, DcMotor... motors) throws InterruptedException {
@@ -145,6 +78,59 @@ public class StrykeAutonomous extends StrykeOpMode {
             Thread.sleep(10 - (System.currentTimeMillis() - currentTime) ,0);
         }
         setDriveSpeed(0, 0);
+    }
+
+    public void encoderDrive(double inches, double speed, DcMotor... motors) throws InterruptedException {
+        int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
+        resetMotorEncoders();
+        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
+        while(getAverageEncoderPosition(motors) <= pulses) {
+            setDriveSpeed(speed, -speed);
+            telemetry.addData("Target", pulses);
+            telemetry.addData("Current", getAverageEncoderPosition(motors));
+            telemetry.update();
+            idle();
+        }
+        setDriveSpeed(0, 0);
+    }
+
+    public void encoderDrive(double inches, double speed, int time, DcMotor... motors) throws InterruptedException {
+        int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
+        resetMotorEncoders();
+        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
+        while(getAverageEncoderPosition(motors) <= pulses || (System.currentTimeMillis() * 1000) < time) {
+            setDriveSpeed(speed, -speed);
+            telemetry.addData("Target", pulses);
+            telemetry.addData("Current", getAverageEncoderPosition(motors));
+            telemetry.update();
+            idle();
+        }
+        setDriveSpeed(0, 0);
+    }
+
+
+    /*
+    ==============================================
+    ================TURN METHODS==================
+    ==============================================
+     */
+
+    public void turn(int deg, double pow) throws InterruptedException {
+        int current = getGyro().getHeading();
+        int target = current + deg;
+        if (target > 360) target -= 360;
+        if(target < 0) target = 360 + target;
+        boolean turnLeft = getDistance(target, current) < 0; // if we have to turn left
+
+        while(Math.abs(getDistance(target, current)) > 2){
+            current = getGyro().getHeading();
+            if (turnLeft) {
+                setDriveSpeed(-pow, -pow);
+            } else {
+                setDriveSpeed(pow, pow);
+            }
+            idle();
+        }
     }
 
     public void pidGyroTurn(int deltaDeg) throws InterruptedException {
@@ -203,69 +189,75 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
-    public void negativePidGyroTurn(int deltaDeg) throws InterruptedException {
-        double p = 0.0055, i = -0.0005, d = 0;
-        deltaDeg = Math.abs(deltaDeg);
-        int current = getGyro().getHeading();
-        int initial = current;
-        long currentTime = System.currentTimeMillis();
-        long lastTime = currentTime;
-
-        int target = current - deltaDeg;
-        if (target > 360) target -= 360;
-        if(target < 0) target = 360 + target;
-        double integral = 0;
-
-        while(Math.abs(getDistance(target, current)) > 2){ // While we are more than 2 deg. off
-            current = getGyro().getHeading();
-            currentTime = System.currentTimeMillis();
-            long deltaT = currentTime - lastTime;
-
-            // distance from our desired place to our current
-            int error = getDistance(target, current); // How far away from our desired change in deg.
-
-            integral = integral + (0.5*deltaT);
-            double output = p * error + i * integral;
-            if(output < 0) output = Range.clip(output, -0.28, -1);
-            else if (output > 0) output = Range.clip(output, 0.28, 1);
-
-            telemetry.addData("Output", output + " ");
-            telemetry.addData("p", Math.abs(p) * Math.abs(error) + " ");
-            telemetry.addData("Error", error);
-            telemetry.addData("Current", current);
-            telemetry.addData("Displacement", getDistance(current, initial));
+    public void encoderTurn(double deg, double speed, DcMotor... motors) throws InterruptedException {
+        //                    Arc%     * Circumference  / Dist. per rotation * ppr * percent error
+        int pulses = (int) ((((deg/360) * (18 * Math.PI) / (6 * Math.PI) * 280) * 1.6) * 1.55);
+        resetMotorEncoders();
+        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
+        while(getAverageEncoderPosition(motors) <= pulses) {
+            setDriveSpeed(speed, speed);
+            telemetry.addData("Target", pulses);
+            telemetry.addData("Current", getAverageEncoderPosition(motors));
             telemetry.update();
-
-            setDriveSpeed(output, output);
-            lastTime = currentTime;
-            idle();
-            Thread.sleep(Range.clip(10 - (int) (System.currentTimeMillis() - currentTime), 0, 10) ,0);
-        }
-        stopDriveMotors();
-    }
-
-    public void turn(int deg, double pow) throws InterruptedException {
-        int current = getGyro().getHeading();
-        int target = current + deg;
-        if (target > 360) target -= 360;
-        if(target < 0) target = 360 + target;
-        boolean turnLeft = getDistance(target, current) < 0; // if we have to turn left
-
-        while(Math.abs(getDistance(target, current)) > 2){
-            current = getGyro().getHeading();
-            if (turnLeft) {
-                setDriveSpeed(-pow, -pow);
-            } else {
-                setDriveSpeed(pow, pow);
-            }
             idle();
         }
+
+        setDriveSpeed(0, 0);
+
     }
+
+    /*
+    ==============================================
+    ================HELPER METHODS================
+    ==============================================
+     */
 
     public int getDistance(int target, int current) {
         int o = target - current;
         return (((o + 180)) % 360) - 180;
     }
 
+    public void align(double pow) throws InterruptedException {
+        while(ods.getLightDetected() < 0.3){
+            setDriveSpeed(pow, pow);
+            idle();
+        }
+    }
 
+    public void checkBlueBeacon() throws InterruptedException {
+        if(beaconColor.red() > beaconColor.blue()){ // we are incorrect!
+            Thread.sleep(5000);
+            encoderDrive(3,-0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+        }
+
+        while (beaconColor.red() > beaconColor.blue()) {
+            encoderDrive(3,-0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+            idle();
+        }
+    }
+
+    public void checkRedBeacon() throws InterruptedException {
+        if (beaconColor.blue() > beaconColor.red()){ // we are incorrect!
+            Thread.sleep(5000);
+            encoderDrive(3,-0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+        }
+        stopDriveMotors();
+
+        while (beaconColor.blue() > beaconColor.red()) {
+            encoderDrive(3,-0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,0.5,getDriveMotors()); // backup
+            idle();
+        }
+    }
 }
