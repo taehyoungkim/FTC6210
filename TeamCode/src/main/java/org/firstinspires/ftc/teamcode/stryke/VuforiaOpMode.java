@@ -14,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.R;
 
-@TeleOp(name="Camera", group="Testing")
 public class VuforiaOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
