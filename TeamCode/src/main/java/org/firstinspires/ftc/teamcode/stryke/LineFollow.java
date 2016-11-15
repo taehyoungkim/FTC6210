@@ -8,35 +8,42 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
  */
 @Autonomous(name="LineFollow Test", group = "Testing")
 public class LineFollow extends StrykeOpMode {
-    private OpticalDistanceSensor ods;
 
     public void runOpMode() throws InterruptedException {
-        telemetry.addData("Status", "Initialized");
+        telemetry.addData("Status", "Initializing hardware...");
         telemetry.update();
-
-        leftDriveFront = hardwareMap.dcMotor.get("fl");
-        rightDriveFront = hardwareMap.dcMotor.get("fr");
-        leftDriveBack = hardwareMap.dcMotor.get("bl");
-        rightDriveBack = hardwareMap.dcMotor.get("br");
-
-        ods = hardwareMap.opticalDistanceSensor.get("ods");
+        initHardware();
+        telemetry.addData("Status", "Initialized.");
+        telemetry.update();
 
         waitForStart();
 
         while(opModeIsActive()) {
             double value = ods.getLightDetected();
-            while (value < 0.25) {
-                setDriveSpeed(0.5, 0.5);
-            }
-            if(value >= 0.25) {
-                setRightDriveSpeed(-0.2);
-                setLeftDriveSpeed(0);
-            } else {
-                setLeftDriveSpeed(-0.2);
-                setRightDriveSpeed(0);
-            }
+            if (value < 0.5) {
+                setDriveSpeed(0.5, -0.5);
+            } else searchForLine(0.3,500,true);
+
             telemetry.addData("ODS: ", value);
             telemetry.update();
+            idle();
+        }
+    }
+
+    public void searchForLine(double speed, long ms, boolean left) throws InterruptedException {
+
+        long nextTime = System.currentTimeMillis() + ms;
+        while(ods.getLightDetected() < 0.5) {
+            if(nextTime <= System.currentTimeMillis()) {
+                left = !left;
+                nextTime = (long) (System.currentTimeMillis() + (ms*1.3));
+                continue;
+            }
+            if(left) {
+                setDriveSpeed(-speed, -speed);
+            } else {
+                setDriveSpeed(speed, speed);
+            }
             idle();
         }
     }

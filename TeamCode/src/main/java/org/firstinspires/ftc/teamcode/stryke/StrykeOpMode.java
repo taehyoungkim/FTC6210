@@ -61,10 +61,9 @@ public class StrykeOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        initHardware();
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
-        initHardware();
 
         GamepadListener gp1 = new GamepadListener(gamepad1);
         gp1.setOnReleased(GamepadListener.Button.A, new Runnable() {
@@ -104,13 +103,13 @@ public class StrykeOpMode extends LinearOpMode {
             if(halfSpeed){
                 setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -0.3),
                         scaleGamepadInput(gamepad1.right_stick_y, 0.3));
-                telemetry.addData("Reversed", "yes");
+                telemetry.addData("Reversed", "Yes!");
             }
 
             else{
                 setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 1),
                         scaleGamepadInput(gamepad1.left_stick_y, -1));
-                telemetry.addData("Reversed", "no");
+                telemetry.addData("Reversed", "No!");
             }
 
             telemetry.update();

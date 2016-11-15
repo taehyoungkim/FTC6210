@@ -20,8 +20,20 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Initializing gyro...");
         telemetry.update();
         getGyro().calibrate();
-        while(getGyro().isCalibrating()) idle();
-
+        int dots = 0;
+        long nextTime = System.currentTimeMillis() + 500;
+        while(getGyro().isCalibrating()){
+            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+                nextTime = System.currentTimeMillis() + 500;
+                String out = "Initializing gyro";
+                for(int i = 0; i < dots % 4; i ++)
+                    out += ".";
+                dots ++;
+                telemetry.addData("Status", out);
+                telemetry.update();
+            }
+            idle();
+        }
         telemetry.addData("Status", "Ready.");
         telemetry.update();
 
