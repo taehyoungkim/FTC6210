@@ -48,6 +48,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
         turn(45, 0.3);
+        Thread.sleep(200);
 
         telemetry.addData("Heading", getGyro().getHeading());
         telemetry.update();
@@ -69,6 +70,7 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         // hit the beacon
         encoderDrive(25, -0.3, 5000, getDriveMotors());
+        long initialHit = System.currentTimeMillis();
 
         telemetry.addData("Status", "Re-Calibrating the Gyro!");
         telemetry.update();
@@ -78,7 +80,7 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         encoderDrive(3,0.5,getDriveMotors()); // backup
 
-        checkBlueBeacon();
+        checkBlueBeacon(initialHit);
 
         stopDriveMotors();
 

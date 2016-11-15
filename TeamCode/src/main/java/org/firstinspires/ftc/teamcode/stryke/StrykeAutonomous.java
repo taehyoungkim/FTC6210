@@ -130,6 +130,8 @@ public class StrykeAutonomous extends StrykeOpMode {
             } else {
                 setDriveSpeed(pow, pow);
             }
+            telemetry.addData("Heading", current);
+
             idle();
         }
     }
@@ -229,8 +231,16 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void checkBlueBeacon() throws InterruptedException {
+        checkBlueBeacon(System.currentTimeMillis());
+    }
+
+    public void checkRedBeacon() throws InterruptedException {
+        checkRedBeacon(System.currentTimeMillis());
+    }
+
+    public void checkBlueBeacon(long initialHit) throws InterruptedException {
         if(beaconColor.red() > beaconColor.blue()){ // we are incorrect!
-            Thread.sleep(5000);
+            Thread.sleep((long) (5000 - Range.clip(System.currentTimeMillis() - initialHit, 0, 5000)));
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);
@@ -247,9 +257,9 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
     }
 
-    public void checkRedBeacon() throws InterruptedException {
+    public void checkRedBeacon(long initialHit) throws InterruptedException {
         if (beaconColor.blue() > beaconColor.red()){ // we are incorrect!
-            Thread.sleep(5000);
+            Thread.sleep((long) (5000 - Range.clip(System.currentTimeMillis() - initialHit, 0, 5000)));
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);

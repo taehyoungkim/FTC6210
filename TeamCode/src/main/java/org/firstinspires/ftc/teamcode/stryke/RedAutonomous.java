@@ -51,6 +51,7 @@ public class RedAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Heading", getGyro().getHeading());
         telemetry.update();
+        Thread.sleep(200);
 
         telemetry.addData("Status", "Driving towards the first beacon");
         telemetry.update();
@@ -70,6 +71,7 @@ public class RedAutonomous extends StrykeAutonomous {
 
         //hit the beacon
         encoderDrive(25, -0.3, 3000, getDriveMotors());
+        long initialHit = System.currentTimeMillis();
 
         telemetry.addData("Status", "Re-Calibrating the Gyro!");
         telemetry.update();
@@ -83,7 +85,7 @@ public class RedAutonomous extends StrykeAutonomous {
         // Run into the beacon if not already correct after 5 seconds
         encoderDrive(3,0.5,getDriveMotors()); // backup
 
-        checkRedBeacon();
+        checkRedBeacon(initialHit);
 
         stopDriveMotors();
 
