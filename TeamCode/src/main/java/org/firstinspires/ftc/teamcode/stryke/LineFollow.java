@@ -20,7 +20,7 @@ public class LineFollow extends StrykeOpMode {
 
         while(opModeIsActive()) {
             double value = ods.getLightDetected();
-            if (value < 0.5) {
+            if (value >= 0.5) {
                 setDriveSpeed(0.5, -0.5);
             } else searchForLine(0.3,500,true);
 
