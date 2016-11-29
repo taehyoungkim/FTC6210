@@ -18,7 +18,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveToLine() throws InterruptedException {
         while(ods.getLightDetected() < 0.4) {
-            setDriveSpeed(-0.25,0.25);
+            setDriveSpeed(0.25, -0.25);
             telemetry.addData("ODS", ods.getLightDetected());
             telemetry.update();
             idle();
@@ -28,7 +28,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveToWall(double cm) throws InterruptedException {
         while (range.getDistance(DistanceUnit.CM) > cm) {
-            setDriveSpeed(-0.18, 0.18);
+            setDriveSpeed(0.18, -0.18);
             idle();
         }
     }
@@ -131,6 +131,8 @@ public class StrykeAutonomous extends StrykeOpMode {
                 setDriveSpeed(pow, pow);
             }
             telemetry.addData("Heading", current);
+            telemetry.addData("Target", target);
+            telemetry.update();
 
             idle();
         }

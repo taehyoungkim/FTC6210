@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -15,6 +16,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Initializing hardware...");
         telemetry.update();
         initHardware();
+        hitter.setPosition(Servo.MAX_POSITION);
         beaconColor.enableLed(false);
 
         telemetry.addData("Status", "Initializing gyro...");
@@ -41,13 +43,13 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Positioning to shoot the ball");
         telemetry.update();
-        encoderDrive(55, -0.15, getDriveMotors());
+        encoderDrive(55, 0.15, getDriveMotors());
         //TODO: SHOOT
 
         Thread.sleep(200);
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
-        turn(45, 0.3);
+        turn(45, 0.2);
         Thread.sleep(200);
 
         telemetry.addData("Heading", getGyro().getHeading());
@@ -61,7 +63,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         Thread.sleep(100);
 
         // overshoot the line
-        encoderDrive(5,-0.15,getDriveMotors());
+        encoderDrive(5, 0.15,getDriveMotors());
         align(0.3);
         stopDriveMotors();
 
@@ -69,8 +71,10 @@ public class BlueAutonomous extends StrykeAutonomous {
         driveToWall(10);
 
         // hit the beacon
-        encoderDrive(25, -0.3, 5000, getDriveMotors());
-        long initialHit = System.currentTimeMillis();
+        hitBeacon();
+
+        //encoderDrive(25, -0.3, 5000, getDriveMotors());
+        //long initialHit = System.currentTimeMillis();
 
         telemetry.addData("Status", "Re-Calibrating the Gyro!");
         telemetry.update();
@@ -80,12 +84,12 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         encoderDrive(3,0.5,getDriveMotors()); // backup
 
-        checkBlueBeacon(initialHit);
+        //checkBlueBeacon(initialHit);
 
         stopDriveMotors();
 
         //back away
-        encoderDrive(25, 0.15, getDriveMotors());
+        encoderDrive(25, -0.15, getDriveMotors());
         stopDriveMotors();
         telemetry.addData("Status", "Turning towards the second beacon");
         telemetry.update();
@@ -101,7 +105,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
         //Overshoot the line a little
-        encoderDrive(9, -0.18, getDriveMotors());
+        encoderDrive(9, 0.18, getDriveMotors());
         stopDriveMotors();
         Thread.sleep(100);
 
@@ -114,10 +118,40 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         stopDriveMotors();
 
-        encoderDrive(2,0.5,getDriveMotors()); // backup
+        encoderDrive(2,-0.5,getDriveMotors()); // backup
 
-        checkBlueBeacon();
+        hitBeacon();
+
+        //checkBlueBeacon();
 
         stopDriveMotors();
     }
+
+
+    private void hitBeacon() throws InterruptedException {
+        if (beaconColor.blue() > beaconColor.red()) {
+            hitter.setPosition(Servo.MAX_POSITION);
+        } else {
+            hitter.setPosition(Servo.MIN_POSITION);
+        }
+
+        Thread.sleep(5000);
+        encoderDrive(3,0.15, getDriveMotors()); // hit
+        stopDriveMotors();
+        Thread.sleep(100);
+        encoderDrive(3,-0.5,getDriveMotors()); // backup
+
+        stopDriveMotors();
+        Thread.sleep(300);
+
+        // just in case something goes wrong...
+        while (beaconColor.blue() > beaconColor.red()) {
+            encoderDrive(3,0.15, getDriveMotors()); // hit again
+            stopDriveMotors();
+            Thread.sleep(100);
+            encoderDrive(3,-0.5,getDriveMotors()); // backup
+            idle();
+        }
+    }
+
 }

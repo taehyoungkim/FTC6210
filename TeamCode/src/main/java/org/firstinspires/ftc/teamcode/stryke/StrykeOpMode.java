@@ -54,6 +54,7 @@ public class StrykeOpMode extends LinearOpMode {
     public OpticalDistanceSensor ods;
     public ModernRoboticsI2cRangeSensor range;
     public ColorSensor beaconColor;
+    public Servo hitter;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -75,8 +76,8 @@ public class StrykeOpMode extends LinearOpMode {
 
         stopDriveMotors();
 
-        DcMotor lift = hardwareMap.dcMotor.get("lift");
-        DcMotor huger = hardwareMap.dcMotor.get("hug");
+        DcMotor liftOne = hardwareMap.dcMotor.get("one");
+        DcMotor liftTwo = hardwareMap.dcMotor.get("two");
 
         waitForStart();
         runtime.reset();
@@ -88,27 +89,32 @@ public class StrykeOpMode extends LinearOpMode {
 
             gp1.update(gamepad1);
 
-            if(gamepad2.right_trigger > 0.1)
-                huger.setPower(-0.6);
-            else if (gamepad2.right_bumper)
-                huger.setPower(0.6);
-            else huger.setPower(0);
+            if (gamepad2.dpad_up){
+                liftOne.setPower(-1);
+                liftTwo.setPower(-1);
+            } else if (gamepad2.dpad_down) {
+                liftOne.setPower(1);
+                liftTwo.setPower(1);
+            } else {
+                liftOne.setPower(0);
+                liftTwo.setPower(0);
+            }
 
-            if(gamepad2.dpad_up)
-                lift.setPower(-1);
-            else if(gamepad2.dpad_down)
-                lift.setPower(1);
-            else lift.setPower(0);
+            if (gamepad1.b) { //right
+                hitter.setPosition(Servo.MAX_POSITION);
+            } else if (gamepad1.x) { // left
+                hitter.setPosition(Servo.MIN_POSITION);
+            }
 
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -0.3),
-                        scaleGamepadInput(gamepad1.right_stick_y, 0.3));
+                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 0.3),
+                        scaleGamepadInput(gamepad1.left_stick_y, -0.3));
                 telemetry.addData("Reversed", "Yes!");
             }
 
             else{
-                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 1),
-                        scaleGamepadInput(gamepad1.left_stick_y, -1));
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -1),
+                        scaleGamepadInput(gamepad1.right_stick_y, 1));
                 telemetry.addData("Reversed", "No!");
             }
 
@@ -127,6 +133,7 @@ public class StrykeOpMode extends LinearOpMode {
         ods = hardwareMap.opticalDistanceSensor.get("ods");
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
         beaconColor = hardwareMap.colorSensor.get("color");
+        hitter = hardwareMap.servo.get("hitter");
     }
 
     // **** HELPER METHODS ****
