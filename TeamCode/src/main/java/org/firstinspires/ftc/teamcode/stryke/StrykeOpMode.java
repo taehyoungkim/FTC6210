@@ -54,7 +54,7 @@ public class StrykeOpMode extends LinearOpMode {
     public OpticalDistanceSensor ods;
     public ModernRoboticsI2cRangeSensor range;
     public ColorSensor beaconColor;
-    public Servo hitter;
+    public Servo hitter, release;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -63,6 +63,7 @@ public class StrykeOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
+        release.setPosition(1);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -106,6 +107,12 @@ public class StrykeOpMode extends LinearOpMode {
                 hitter.setPosition(Servo.MIN_POSITION);
             }
 
+            if (gamepad2.y) {
+                release.setPosition(0);
+            } if (gamepad2.a) {
+                release.setPosition(1);
+            }
+
             if(halfSpeed){
                 setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 0.3),
                         scaleGamepadInput(gamepad1.left_stick_y, -0.3));
@@ -134,6 +141,7 @@ public class StrykeOpMode extends LinearOpMode {
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
         beaconColor = hardwareMap.colorSensor.get("color");
         hitter = hardwareMap.servo.get("hitter");
+        release = hardwareMap.servo.get("release");
     }
 
     // **** HELPER METHODS ****
