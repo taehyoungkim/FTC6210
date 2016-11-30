@@ -28,7 +28,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveToWall(double cm) throws InterruptedException {
         while (range.getDistance(DistanceUnit.CM) > cm) {
-            setDriveSpeed(0.18, -0.18);
+            setDriveSpeed(0.1, -0.1);
             idle();
         }
     }

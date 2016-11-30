@@ -114,8 +114,8 @@ public class StrykeOpMode extends LinearOpMode {
             }
 
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 0.3),
-                        scaleGamepadInput(gamepad1.left_stick_y, -0.3));
+                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 0.6),
+                        scaleGamepadInput(gamepad1.left_stick_y, -0.6));
                 telemetry.addData("Reversed", "Yes!");
             }
 
