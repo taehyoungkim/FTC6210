@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.stryke;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
 @Autonomous(name = "Red Autonomous", group = "Auto")
 public class RedAutonomous extends StrykeAutonomous {
 

@@ -9,6 +9,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     int wheelDiam = 6;
     private int encoderPPR = 7 * 40;
+    protected final double LEFT = 0, RIGHT = 0.9, MIDDLE= 0.45;
 
     /*
     ==============================================
