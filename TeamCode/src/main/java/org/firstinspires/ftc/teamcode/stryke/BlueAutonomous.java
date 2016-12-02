@@ -15,7 +15,8 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.update();
         initHardware();
         hitter.setPosition(MIDDLE);
-        release.setPosition(1);
+        releaseLeft.setPosition(1);
+        releaseRight.setPosition(0.7);
         beaconColor.enableLed(false);
 
 //        telemetry.addData("Status", "Initializing gyro...");

@@ -50,11 +50,12 @@ public class StrykeOpMode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
+    public DcMotor liftOne, liftTwo, powerDown;
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
     public ModernRoboticsI2cRangeSensor leftRange, rightRange;
     public ColorSensor beaconColor;
-    public Servo hitter, release;
+    public Servo hitter, releaseLeft, releaseRight;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -63,7 +64,8 @@ public class StrykeOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
-        release.setPosition(1);
+        releaseLeft.setPosition(1);
+        releaseRight.setPosition(0.7);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -77,8 +79,7 @@ public class StrykeOpMode extends LinearOpMode {
 
         stopDriveMotors();
 
-        DcMotor liftOne = hardwareMap.dcMotor.get("one");
-        DcMotor liftTwo = hardwareMap.dcMotor.get("two");
+
 
         waitForStart();
         runtime.reset();
@@ -87,30 +88,13 @@ public class StrykeOpMode extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-
             gp1.update(gamepad1);
 
-            if (gamepad2.dpad_up){
-                liftOne.setPower(-1);
-                liftTwo.setPower(-1);
-            } else if (gamepad2.dpad_down) {
-                liftOne.setPower(1);
-                liftTwo.setPower(1);
-            } else {
-                liftOne.setPower(0);
-                liftTwo.setPower(0);
-            }
-
+            // GAMEPAD 1
             if (gamepad1.b) { //right
                 hitter.setPosition(Servo.MAX_POSITION);
             } else if (gamepad1.x) { // left
                 hitter.setPosition(Servo.MIN_POSITION);
-            }
-
-            if (gamepad2.y) {
-                release.setPosition(0);
-            } if (gamepad2.a) {
-                release.setPosition(1);
             }
 
             if(halfSpeed){
@@ -125,6 +109,32 @@ public class StrykeOpMode extends LinearOpMode {
                 telemetry.addData("Reversed", "No!");
             }
 
+
+            // GAMEPAD 2
+            if (gamepad2.dpad_up){
+
+                //if(runtime.seconds() > 60)
+                    holdBallHugger();
+
+                liftOne.setPower(-1);
+                liftTwo.setPower(-1);
+                powerDown.setPower(1);
+            } else if (gamepad2.dpad_down) {
+                liftOne.setPower(1);
+                liftTwo.setPower(1);
+                powerDown.setPower(-1);
+            } else {
+                liftOne.setPower(0);
+                liftTwo.setPower(0);
+                powerDown.setPower(0);
+            }
+
+            if (gamepad2.y) {
+                releaseBallHugger();
+            } if (gamepad2.a) {
+                holdBallHugger();
+            }
+
             telemetry.update();
             idle();
         }
@@ -136,19 +146,35 @@ public class StrykeOpMode extends LinearOpMode {
         rightDriveFront = hardwareMap.dcMotor.get("fr");
         leftDriveBack = hardwareMap.dcMotor.get("bl");
         rightDriveBack = hardwareMap.dcMotor.get("br");
+
+        liftOne = hardwareMap.dcMotor.get("one");
+        liftTwo = hardwareMap.dcMotor.get("two");
+        powerDown = hardwareMap.dcMotor.get("down");
+
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
         leftRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "left");
         rightRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "right");
         beaconColor = hardwareMap.colorSensor.get("color");
         hitter = hardwareMap.servo.get("hitter");
-        release = hardwareMap.servo.get("release");
+        releaseLeft = hardwareMap.servo.get("release");
+        releaseRight = hardwareMap.servo.get("release2");
     }
 
     // **** HELPER METHODS ****
     // DcMotor Helper Methods
     public void stopDriveMotors() {
         setDriveSpeed(0, 0);
+    }
+
+    public void holdBallHugger() {
+        releaseLeft.setPosition(1);
+        releaseRight.setPosition(0.7);
+    }
+
+    public void releaseBallHugger() {
+        releaseLeft.setPosition(0);
+        releaseRight.setPosition(1);
     }
 
     public void resetMotorEncoders(){
