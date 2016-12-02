@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Blue Autonomous", group = "Auto")
@@ -42,18 +40,18 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         waitForStart();
 
-        telemetry.addData("Status", "Positioning to shoot the ball");
-        telemetry.update();
-        encoderDrive(30, 0.15, getDriveMotors());
-        //TODO: SHOOT
-
-        Thread.sleep(200);
-        telemetry.addData("Status", "Turning towards the first beacon");
-        telemetry.update();
-        turn(30, 0.3);
-        Thread.sleep(200);
-
-        telemetry.addData("Heading", getGyro().getHeading());
+//        telemetry.addData("Status", "Positioning to shoot the ball");
+//        telemetry.update();
+//        encoderDrive(30, 0.15, getDriveMotors());
+//        //TODO: SHOOT
+//
+//        Thread.sleep(200);
+//        telemetry.addData("Status", "Turning towards the first beacon");
+//        telemetry.update();
+//        turn(30, 0.3);
+//        Thread.sleep(200);
+//
+//        telemetry.addData("Heading", getGyro().getHeading());
 
         telemetry.addData("Status", "Driving towards the first beacon");
         telemetry.update();
@@ -63,13 +61,27 @@ public class BlueAutonomous extends StrykeAutonomous {
         Thread.sleep(100);
 
         // overshoot the line
-        encoderDrive(5, 0.15, getDriveMotors());
+        encoderDrive(8, 0.15, getDriveMotors());
         align(0.3);
+
+//        while (leftRange.cmUltrasonic() > rightRange.cmUltrasonic()){
+//            setDriveSpeed(0.1,0.1);
+//        }
+//        while(ods.getLightDetected() > 0.3) {
+//            setDriveSpeed(0.15, 0.1);
+//            idle();
+//        }
+//
+//        while(ods.getLightDetected() < 0.3) {
+//            setDriveSpeed(-0.15, -0.1);
+//            idle();
+//        }
+
         stopDriveMotors();
 
         // Drive towards the beacon
         driveToWall(5);
-        telemetry.addData("Distance from the wall", range.getDistance(DistanceUnit.CM));
+        telemetry.addData("Distance from the wall", leftRange.getDistance(DistanceUnit.CM));
         telemetry.update();
         Thread.sleep(100);
 
@@ -91,11 +103,11 @@ public class BlueAutonomous extends StrykeAutonomous {
         stopDriveMotors();
 
         //back away
-        encoderDrive(25, -0.15, getDriveMotors());
+        encoderDrive(10, -0.1, getDriveMotors());
         stopDriveMotors();
         telemetry.addData("Status", "Turning towards the second beacon");
         telemetry.update();
-        turn(360-90, 0.3);
+        turn(360-80, 0.3);
         stopDriveMotors();
 
 
@@ -107,7 +119,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
         //Overshoot the line a little
-        encoderDrive(9, 0.18, getDriveMotors());
+        encoderDrive(8, 0.15, getDriveMotors());
         stopDriveMotors();
         Thread.sleep(100);
 
@@ -116,11 +128,9 @@ public class BlueAutonomous extends StrykeAutonomous {
         stopDriveMotors();
 
         // Drive towards the beacon
-        driveToWall(4);
+        driveToWall(5);
 
         stopDriveMotors();
-
-        encoderDrive(2,-0.5,getDriveMotors()); // backup
 
         hit();
 
@@ -148,7 +158,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         }
 
         Thread.sleep(500);
-        encoderDrive(6,0.15,1, getDriveMotors()); // hit
+        encoderDrive(7 ,0.15,2,  getDriveMotors()); // hit
         stopDriveMotors();
         Thread.sleep(300);
         encoderDrive(3,-0.5, 1, getDriveMotors()); // backup again

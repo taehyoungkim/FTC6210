@@ -9,7 +9,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     int wheelDiam = 6;
     private int encoderPPR = 7 * 40;
-    protected final double LEFT = 0, RIGHT = 0.9, MIDDLE= 0.45;
+    protected final double LEFT = 0, RIGHT = 1, MIDDLE= 0.5;
 
     /*
     ==============================================
@@ -18,8 +18,8 @@ public class StrykeAutonomous extends StrykeOpMode {
      */
 
     public void driveToLine() throws InterruptedException {
-        while(ods.getLightDetected() < 0.4) {
-            setDriveSpeed(0.25, -0.25);
+        while(ods.getLightDetected() < 0.3) {
+            setDriveSpeed(0.15, -0.15);
             telemetry.addData("ODS", ods.getLightDetected());
             telemetry.update();
             idle();
@@ -28,7 +28,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void driveToWall(double cm) throws InterruptedException {
-        while (range.getDistance(DistanceUnit.CM) > cm) {
+        while (leftRange.getDistance(DistanceUnit.CM) > cm || rightRange.getDistance(DistanceUnit.CM) > cm) {
             setDriveSpeed(0.1, -0.1);
             idle();
         }
@@ -127,9 +127,11 @@ public class StrykeAutonomous extends StrykeOpMode {
         while(Math.abs(getDistance(target, current)) > 2){
             current = getGyro().getHeading();
             if (turnLeft) {
-                setDriveSpeed(-pow, -pow);
+                setLeftDriveSpeed(-pow-0.15);
+                setRightDriveSpeed(-pow);
             } else {
-                setDriveSpeed(pow, pow);
+                setLeftDriveSpeed(pow);
+                setRightDriveSpeed(pow + 0.15);
             }
             telemetry.addData("Heading", current);
             telemetry.addData("Target", target);
@@ -228,7 +230,8 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void align(double pow) throws InterruptedException {
         while(ods.getLightDetected() < 0.3){
-            setDriveSpeed(pow, pow);
+            setLeftDriveSpeed(pow+0.15);
+            setRightDriveSpeed(pow);
             idle();
         }
     }
