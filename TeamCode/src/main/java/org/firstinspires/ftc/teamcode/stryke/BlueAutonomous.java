@@ -18,23 +18,23 @@ public class BlueAutonomous extends StrykeAutonomous {
         release.setPosition(1);
         beaconColor.enableLed(false);
 
-        telemetry.addData("Status", "Initializing gyro...");
-        telemetry.update();
-        getGyro().calibrate();
-        int dots = 0;
-        long nextTime = System.currentTimeMillis() + 500;
-        while(getGyro().isCalibrating()){
-            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
-                nextTime = System.currentTimeMillis() + 500;
-                String out = "Initializing gyro";
-                for(int i = 0; i < dots % 4; i ++)
-                    out += ".";
-                dots ++;
-                telemetry.addData("Status", out);
-                telemetry.update();
-            }
-            idle();
-        }
+//        telemetry.addData("Status", "Initializing gyro...");
+//        telemetry.update();
+//        getGyro().calibrate();
+//        int dots = 0;
+//        long nextTime = System.currentTimeMillis() + 500;
+//        while(getGyro().isCalibrating()){
+//            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+//                nextTime = System.currentTimeMillis() + 500;
+//                String out = "Initializing gyro";
+//                for(int i = 0; i < dots % 4; i ++)
+//                    out += ".";
+//                dots ++;
+//                telemetry.addData("Status", out);
+//                telemetry.update();
+//            }
+//            idle();
+//        }
         telemetry.addData("Status", "Ready.");
         telemetry.update();
 
@@ -91,12 +91,24 @@ public class BlueAutonomous extends StrykeAutonomous {
         //hit the beacon
         //encoderDrive(10, 0.3, getDriveMotors());
         //long initialHit = System.currentTimeMillis();
-
+        Thread.sleep(500);
         telemetry.addData("Status", "Re-Calibrating the Gyro!");
         telemetry.update();
-        Thread.sleep(100);
         getGyro().calibrate();
-        while(getGyro().isCalibrating()) idle();
+        int dots = 0;
+        long nextTime = System.currentTimeMillis() + 500;
+        while(getGyro().isCalibrating()){
+            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+                nextTime = System.currentTimeMillis() + 500;
+                String out = "Initializing gyro";
+                for(int i = 0; i < dots % 4; i ++)
+                    out += ".";
+                dots ++;
+                telemetry.addData("Status", out);
+                telemetry.update();
+            }
+            idle();
+        }
 
         //checkBlueBeacon(initialHit);
 
@@ -114,14 +126,13 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Driving towards the second beacon");
         telemetry.update();
         driveToLine();
-        stopDriveMotors();
+        Thread.sleep(100);
 
         telemetry.addData("Status", "Line found! Aligning...");
         telemetry.update();
         //Overshoot the line a little
         encoderDrive(8, 0.15, getDriveMotors());
         stopDriveMotors();
-        Thread.sleep(100);
 
         // Turn until we are on the left side of the tape
         align(0.3);
@@ -147,7 +158,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Left = " + left);
         telemetry.update();
         //backup
-        encoderDrive(6,-0.2,1,getDriveMotors());
+        encoderDrive(4,-0.2,1,getDriveMotors());
         Thread.sleep(500);
         //Align servo
         if (left) {
@@ -158,7 +169,7 @@ public class BlueAutonomous extends StrykeAutonomous {
         }
 
         Thread.sleep(500);
-        encoderDrive(7 ,0.15,2,  getDriveMotors()); // hit
+        encoderDrive(6 ,0.15, 4, getDriveMotors()); // hit
         stopDriveMotors();
         Thread.sleep(300);
         encoderDrive(3,-0.5, 1, getDriveMotors()); // backup again
