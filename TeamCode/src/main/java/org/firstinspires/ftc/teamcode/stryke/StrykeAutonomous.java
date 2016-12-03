@@ -19,7 +19,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveToLine() throws InterruptedException {
         while(ods.getLightDetected() < 0.3) {
-            setDriveSpeed(0.15, -0.15);
+            setDriveSpeed(0.15, -0.17);
             telemetry.addData("ODS", ods.getLightDetected());
             telemetry.update();
             idle();
@@ -27,11 +27,9 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
-    public void driveToWall(double cm) throws InterruptedException {
-        while (leftRange.getDistance(DistanceUnit.CM) > cm || rightRange.getDistance(DistanceUnit.CM) > cm) {
-            setDriveSpeed(0.1, -0.1);
-            idle();
-        }
+    public void driveToWall() throws InterruptedException {
+        driveDistance(24, 0.2, 2 * 1000);
+        stopDriveMotors();
     }
 
     @Deprecated
@@ -96,11 +94,14 @@ public class StrykeAutonomous extends StrykeOpMode {
         setDriveSpeed(0, 0);
     }
 
-    public void encoderDrive(double inches, double speed, int time, DcMotor... motors) throws InterruptedException {
+    public void encoderDrive(double inches, double speed, double time, DcMotor... motors) throws InterruptedException {
+        int offset = getAverageEncoderPosition(motors);
         int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
+        double endTime = System.currentTimeMillis() + time * 1000;
         resetMotorEncoders();
+        while(motors[0].isBusy()) idle();
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
-        while(getAverageEncoderPosition(motors) <= pulses || (System.currentTimeMillis() * 1000) < time) {
+        while(getAverageEncoderPosition(motors)- offset<= pulses && (System.currentTimeMillis()) < endTime) {
             setDriveSpeed(speed, -speed);
             telemetry.addData("Target", pulses);
             telemetry.addData("Current", getAverageEncoderPosition(motors));
@@ -120,21 +121,27 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void turn(int deg, double pow) throws InterruptedException {
         int current = getGyro().getHeading();
         int target = current + deg;
+        double sideComp = 0.15;
         if (target > 360) target -= 360;
         if(target < 0) target = 360 + target;
         boolean turnLeft = getDistance(target, current) < 0; // if we have to turn left
 
-        while(Math.abs(getDistance(target, current)) > 2){
+        while(Math.abs(getDistance(target, current)) > 1){
             current = getGyro().getHeading();
+            boolean newTurnLeft = getDistance(target, current) < 0; // if we have to turn left
+            if(newTurnLeft != turnLeft)
+                return;
+
             if (turnLeft) {
-                setLeftDriveSpeed(-pow-0.15);
+                setLeftDriveSpeed(-pow-sideComp);
                 setRightDriveSpeed(-pow);
             } else {
                 setLeftDriveSpeed(pow);
-                setRightDriveSpeed(pow + 0.15);
+                setRightDriveSpeed(pow + sideComp);
             }
             telemetry.addData("Heading", current);
             telemetry.addData("Target", target);
+            telemetry.addData("Distance", getDistance(target, current));
             telemetry.update();
 
             idle();
@@ -229,9 +236,14 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void align(double pow) throws InterruptedException {
-        while(ods.getLightDetected() < 0.3){
-            setLeftDriveSpeed(pow+0.15);
-            setRightDriveSpeed(pow);
+        while(ods.getLightDetected() < 0.4){
+            if(pow > 0) {
+                setLeftDriveSpeed(pow + 0.15); // turn to the right
+                setRightDriveSpeed(pow);
+            } else {
+                setLeftDriveSpeed(pow - 0.1); // turn to the left
+                setRightDriveSpeed(pow - 0.1);
+            }
             idle();
         }
     }

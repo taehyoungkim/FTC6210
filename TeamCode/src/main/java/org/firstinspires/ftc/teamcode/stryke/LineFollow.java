@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * Created by Taehyoung Kim on 10/3/16.
  */
-@Autonomous(name="LineFollow Test", group = "Testing")
+@Autonomous(name="Sensor Test", group = "Testing")
 public class LineFollow extends StrykeOpMode {
 
     public void runOpMode() throws InterruptedException {
@@ -19,12 +23,9 @@ public class LineFollow extends StrykeOpMode {
         waitForStart();
 
         while(opModeIsActive()) {
-            double value = ods.getLightDetected();
-            if (value >= 0.5) {
-                setDriveSpeed(0.5, -0.5);
-            } else searchForLine(0.3,500,true);
+            //telemetry.addData("Left", leftRange.getDistance(DistanceUnit.CM));
+            //telemetry.addData("Right", rightRange.read8(ModernRoboticsI2cRangeSensor.Register.));
 
-            telemetry.addData("ODS: ", value);
             telemetry.update();
             idle();
         }

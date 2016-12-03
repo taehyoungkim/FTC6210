@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -53,7 +54,7 @@ public class StrykeOpMode extends LinearOpMode {
     public DcMotor liftOne, liftTwo, powerDown;
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
-    public ModernRoboticsI2cRangeSensor leftRange, rightRange;
+    //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
     public ColorSensor beaconColor;
     public Servo hitter, releaseLeft, releaseRight;
 
@@ -153,8 +154,7 @@ public class StrykeOpMode extends LinearOpMode {
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
-        leftRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "left");
-        rightRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "right");
+
         beaconColor = hardwareMap.colorSensor.get("color");
         hitter = hardwareMap.servo.get("hitter");
         releaseLeft = hardwareMap.servo.get("release");
@@ -284,13 +284,20 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void driveDistance(double inches, double leftSpeed, double rightSpeed, long timeMs) {
+
+        long endtime = System.currentTimeMillis() + timeMs;
         try {
             resetMotorEncoders();
+            while(rightDriveBack.isBusy()) idle();
             setDriveSpeed(leftSpeed, rightSpeed);
             long startTime = System.currentTimeMillis() + timeMs;
-            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches
-                    && (timeMs < 0 || System.currentTimeMillis() - startTime < timeMs))
+            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches) {
+                if(timeMs > 0 && System.currentTimeMillis() <= endtime) {
+                    stopDriveMotors();return;
+                }
                 idle();
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
