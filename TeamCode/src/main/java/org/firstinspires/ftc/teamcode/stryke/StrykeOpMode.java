@@ -55,6 +55,7 @@ public class StrykeOpMode extends LinearOpMode {
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
+    public SensorMRRange leftRangeSensor, rightRangeSensor;
     public ColorSensor beaconColor;
     public Servo hitter, releaseLeft, releaseRight;
 
@@ -154,6 +155,9 @@ public class StrykeOpMode extends LinearOpMode {
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
+
+        leftRangeSensor = new SensorMRRange(hardwareMap.i2cDevice.get("left"), I2cAddr.create8bit(0x34));
+        rightRangeSensor = new SensorMRRange(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
 
         beaconColor = hardwareMap.colorSensor.get("color");
         hitter = hardwareMap.servo.get("hitter");
