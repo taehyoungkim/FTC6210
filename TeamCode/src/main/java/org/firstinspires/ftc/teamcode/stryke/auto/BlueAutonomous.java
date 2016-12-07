@@ -1,9 +1,6 @@
-package org.firstinspires.ftc.teamcode.stryke;
+package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ThreadPool;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Blue Autonomous", group = "Auto")
 public class BlueAutonomous extends StrykeAutonomous {

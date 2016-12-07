@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode.stryke;
+package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 public class StrykeAutonomous extends StrykeOpMode {
 

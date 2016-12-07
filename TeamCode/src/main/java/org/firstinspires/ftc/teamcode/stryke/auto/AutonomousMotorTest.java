@@ -1,15 +1,10 @@
-package org.firstinspires.ftc.teamcode.stryke;
+package org.firstinspires.ftc.teamcode.stryke.auto;
 
-import android.provider.Settings;
-import android.util.Log;
-
-import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 @Autonomous(name = "Auto Motor Test!", group = "Testing")
 public class AutonomousMotorTest extends StrykeOpMode {

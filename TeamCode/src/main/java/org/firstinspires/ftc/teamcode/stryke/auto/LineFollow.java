@@ -1,11 +1,8 @@
-package org.firstinspires.ftc.teamcode.stryke;
+package org.firstinspires.ftc.teamcode.stryke.auto;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 /**
  * Created by Taehyoung Kim on 10/3/16.
