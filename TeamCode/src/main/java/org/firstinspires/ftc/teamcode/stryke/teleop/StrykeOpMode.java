@@ -32,13 +32,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.stryke.teleop;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -47,7 +45,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
-import org.firstinspires.ftc.teamcode.stryke.SensorMRRange;
+import org.firstinspires.ftc.teamcode.stryke.MRRangeSensor;
 
 @TeleOp(name="Main Tele-Op", group="Linear Opmode")
 public class StrykeOpMode extends LinearOpMode {
@@ -72,7 +70,7 @@ public class StrykeOpMode extends LinearOpMode {
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
-    public SensorMRRange leftRangeSensor, rightRangeSensor;
+    public MRRangeSensor leftRangeSensor, rightRangeSensor;
     public ColorSensor beaconColor;
     public Servo releaseLeft, releaseRight, ballPopper;
     public CRServo beaconRack;
@@ -211,8 +209,8 @@ public class StrykeOpMode extends LinearOpMode {
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
 
-        leftRangeSensor = new SensorMRRange(hardwareMap.i2cDevice.get("left"), I2cAddr.create8bit(0x34));
-        rightRangeSensor = new SensorMRRange(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
+        leftRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("left"), I2cAddr.create8bit(0x34));
+        rightRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
 
         beaconColor = hardwareMap.colorSensor.get("color");
 

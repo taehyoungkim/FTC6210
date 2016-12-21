@@ -1,15 +1,12 @@
 package org.firstinspires.ftc.teamcode.stryke;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import java.util.ArrayList;
 
 /**
@@ -20,7 +17,7 @@ import java.util.ArrayList;
  */
 
 
-public class SensorMRRange {
+public class MRRangeSensor {
 
     int averageROC;
 
@@ -37,9 +34,10 @@ public class SensorMRRange {
 
     int ultraSonicDistanceValue;
 
-    public SensorMRRange(I2cDevice rangeSensor, I2cAddr addr) {
+    public MRRangeSensor(I2cDevice rangeSensor, I2cAddr addr) {
         this.rangeSensor = rangeSensor;
         this.rangeAddress = addr;
+        ModernRoboticsI2cRangeSensor sen;
         initReader();
     }
 
@@ -56,20 +54,13 @@ public class SensorMRRange {
         rangeReader.engage();
     }
 
-    public int getUltraSonicDistance() {
+    public int cmUltrasonic() {
         getRangeCache();
-
-        int usd = rangeCache[0] & 0xFF;
-        if (usd == 255) {
-            return prevUSDVal;
-        } else {
-            prevUSDVal = usd;
-            return usd;
-        }
+        return rangeCache[0] & 0xFF;
     }
 
     //
-    public int getOpticDistance() {
+    public int getRawOptic() {
         getRangeCache();
         return rangeCache[1] & 0xFF;
     }
@@ -90,7 +81,7 @@ public class SensorMRRange {
     }
 
     public boolean inFrontOfBeacon() {
-        if (getUltraSonicDistance() < 8) {		//value needs to be tested/calculated
+        if (cmUltrasonic() < 8) {		//value needs to be tested/calculated
             return true;
         }
         return false;
@@ -110,12 +101,28 @@ public class SensorMRRange {
         return output;
     }
 
-	/*
-	public double getDistanceCM()
-	{
-		return rangeSensor.getDistance(DistanceUnit.CM);
-	}
-	*/
+    public double pParam = -1.02001;
+    public double qParam = 0.00311326;
+    public double rParam = -8.39366;
+    public int    sParam = 10;
+
+    protected double cmFromOptical(int opticalReading)
+    {
+        if (opticalReading < sParam)
+            return 0;
+        else
+            return pParam * Math.log(qParam * (rParam + opticalReading));
+    }
+
+    public double cmOptical()
+    {
+        return cmFromOptical(getRawOptic());
+    }
+
+    public double distanceCm() {
+        double optical = cmOptical();
+        return optical > 0 ? optical : cmUltrasonic();
+    }
 
     public int getAverageChange(){
         return averageROC;
