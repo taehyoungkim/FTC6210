@@ -364,6 +364,8 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public boolean isGyroInitialized() {
-        return false;
+        return gyroSensor.isCalibrating();
     }
+
+
 }
