@@ -35,8 +35,10 @@ package org.firstinspires.ftc.teamcode.stryke.teleop;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -51,16 +53,29 @@ import org.firstinspires.ftc.teamcode.stryke.SensorMRRange;
 public class StrykeOpMode extends LinearOpMode {
 
     /* Declare OpMode members. */
+
+    public static final double HUGGER_LEFT_UP = 1;
+    public static final double HUGGER_RIGHT_UP = 0.7;
+    public static final double HUGGER_RIGHT_DOWN = 1;
+    public static final double HUGGER_LEFT_DOWN = 1;
+    public static final double BALL_POPPER_IDLE = 0;
+    public static final double BALL_POPPER_POP = 0.9;
+
+    public static double LIFT_SPEED = 1;
+    public static double SLOW_MODE_SCALE = 0.6;
+
     private ElapsedTime runtime = new ElapsedTime();
 
     public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
-    public DcMotor liftOne, liftTwo, powerDown;
+    public DcMotor liftOne, liftTwo;
+    public DcMotor shooter, manip;
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
     public SensorMRRange leftRangeSensor, rightRangeSensor;
     public ColorSensor beaconColor;
-    public Servo hitter, releaseLeft, releaseRight;
+    public Servo releaseLeft, releaseRight, ballPopper;
+    public CRServo beaconRack;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -69,8 +84,9 @@ public class StrykeOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
-        releaseLeft.setPosition(1);
-        releaseRight.setPosition(0.7);
+        releaseLeft.setPosition(HUGGER_LEFT_UP);
+        releaseRight.setPosition(HUGGER_RIGHT_UP);
+        ballPopper.setPosition(BALL_POPPER_IDLE);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -79,6 +95,23 @@ public class StrykeOpMode extends LinearOpMode {
             @Override
             public void run() {
                 halfSpeed = !halfSpeed;
+            }
+        });
+
+        GamepadListener gp2 = new GamepadListener(gamepad2);
+        gp2.setOnReleased(GamepadListener.Button.B, new Runnable() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            shootBall();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
 
@@ -94,51 +127,62 @@ public class StrykeOpMode extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
             gp1.update(gamepad1);
+            gp2.update(gamepad2);
 
             // GAMEPAD 1
-            if (gamepad1.b) { //right
-                hitter.setPosition(Servo.MAX_POSITION);
-            } else if (gamepad1.x) { // left
-                hitter.setPosition(Servo.MIN_POSITION);
+            // Beacon controls
+            if(gamepad1.dpad_left){
+                beaconRack.setPower(1);
+            } else if (gamepad1.dpad_right) {
+                beaconRack.setPower(-1);
             }
 
+            // Drive controls
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, 0.6),
-                        scaleGamepadInput(gamepad1.left_stick_y, -0.6));
+                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, SLOW_MODE_SCALE),
+                        scaleGamepadInput(gamepad1.left_stick_y, -SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
             }
-
             else{
                 setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -1),
                         scaleGamepadInput(gamepad1.right_stick_y, 1));
                 telemetry.addData("Reversed", "No!");
             }
 
+            // Manipulator Controls
+            if(gamepad1.left_trigger > 0.1) {
+                manip.setPower(-gamepad1.left_trigger);
+            } else if (gamepad1.right_trigger > 0.1) {
+                manip.setPower(gamepad1.right_trigger);
+            } else manip.setPower(0);
+
 
             // GAMEPAD 2
+            // Lift controls
             if (gamepad2.dpad_up){
-
-                //if(runtime.seconds() > 60)
+                if(runtime.seconds() > 60)
                     holdBallHugger();
-
-                liftOne.setPower(-1);
-                liftTwo.setPower(-1);
-                powerDown.setPower(1);
+                liftOne.setPower(-LIFT_SPEED);
+                liftTwo.setPower(-LIFT_SPEED);
             } else if (gamepad2.dpad_down) {
-                liftOne.setPower(1);
-                liftTwo.setPower(1);
-                powerDown.setPower(-1);
+                liftOne.setPower(LIFT_SPEED);
+                liftTwo.setPower(LIFT_SPEED);
             } else {
                 liftOne.setPower(0);
                 liftTwo.setPower(0);
-                powerDown.setPower(0);
             }
 
-            if (gamepad2.y) {
+            if (gamepad2.y)
                 releaseBallHugger();
-            } if (gamepad2.a) {
+
+            if (gamepad2.a)
                 holdBallHugger();
-            }
+
+
+            if(gamepad2.dpad_left)
+                ballPopper.setPosition(BALL_POPPER_POP);
+            else ballPopper.setPosition(BALL_POPPER_IDLE);
+
 
             telemetry.update();
             idle();
@@ -148,13 +192,21 @@ public class StrykeOpMode extends LinearOpMode {
 
     public void initHardware() {
         leftDriveFront = hardwareMap.dcMotor.get("fl");
+        leftDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveFront = hardwareMap.dcMotor.get("fr");
+        rightDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftDriveBack = hardwareMap.dcMotor.get("bl");
+        leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveBack = hardwareMap.dcMotor.get("br");
+        rightDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         liftOne = hardwareMap.dcMotor.get("one");
         liftTwo = hardwareMap.dcMotor.get("two");
-        powerDown = hardwareMap.dcMotor.get("down");
+
+        shooter = hardwareMap.dcMotor.get("shoot");
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        manip = hardwareMap.dcMotor.get("manip");
+        manip.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
@@ -163,9 +215,11 @@ public class StrykeOpMode extends LinearOpMode {
         rightRangeSensor = new SensorMRRange(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
 
         beaconColor = hardwareMap.colorSensor.get("color");
-        hitter = hardwareMap.servo.get("hitter");
-        releaseLeft = hardwareMap.servo.get("release");
-        releaseRight = hardwareMap.servo.get("release2");
+
+        releaseLeft = hardwareMap.servo.get("releaseL");
+        releaseRight = hardwareMap.servo.get("releaseR");
+        ballPopper = hardwareMap.servo.get("pop");
+        beaconRack = hardwareMap.crservo.get("rack");
     }
 
     // **** HELPER METHODS ****
@@ -174,15 +228,7 @@ public class StrykeOpMode extends LinearOpMode {
         setDriveSpeed(0, 0);
     }
 
-    public void holdBallHugger() {
-        releaseLeft.setPosition(1);
-        releaseRight.setPosition(0.7);
-    }
 
-    public void releaseBallHugger() {
-        releaseLeft.setPosition(0);
-        releaseRight.setPosition(1);
-    }
 
     public void resetMotorEncoders(){
         setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
@@ -240,6 +286,16 @@ public class StrykeOpMode extends LinearOpMode {
         setServoPositionWithTime(servo, targetPosition, timeMS, 50);
     }
 
+    public void holdBallHugger() {
+        releaseLeft.setPosition(HUGGER_LEFT_UP);
+        releaseRight.setPosition(HUGGER_RIGHT_UP);
+    }
+
+    public void releaseBallHugger() {
+        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
+        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
+    }
+
     // Set a servo's position with respect for time. Used for slowly setting position of a servo
     public void setServoPositionWithTime(final Servo servo, final double targetPosition, final int timeMS, final long resolution) {
         new Thread(new Runnable() {
@@ -282,6 +338,20 @@ public class StrykeOpMode extends LinearOpMode {
 
 
     // AUTONOMOUS METHODS
+    public void shootBall() throws InterruptedException {
+        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, shooter);
+        while(shooter.isBusy()) idle();
+        int start = getAverageEncoderPosition(shooter);
+        shooter.setPower(0.6);
+        long startTime = System.currentTimeMillis();
+        while(shooter.getCurrentPosition() - start < encoderPPR) {
+            idle();
+            if(startTime + 2000 <= System.currentTimeMillis())
+                return;
+        }
+
+    }
+
     public void driveDistance(double inches, double speed) {
         driveDistance(inches, speed, -speed, -1);
     }
@@ -293,7 +363,7 @@ public class StrykeOpMode extends LinearOpMode {
     public void driveDistance(double inches, double leftSpeed, double rightSpeed, long timeMs) {
 
         long endtime = System.currentTimeMillis() + timeMs;
-        try {
+
             resetMotorEncoders();
             while(rightDriveBack.isBusy()) idle();
             setDriveSpeed(leftSpeed, rightSpeed);
@@ -305,11 +375,7 @@ public class StrykeOpMode extends LinearOpMode {
                 idle();
             }
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            stopDriveMotors();
-        }
+
     }
 
     public void encoderTurn(double deltaDeg, double speed) {
@@ -352,7 +418,7 @@ public class StrykeOpMode extends LinearOpMode {
     public void simpleWait(long ms) throws InterruptedException {
         long stopTime = System.currentTimeMillis() + ms;
         while(stopTime > System.currentTimeMillis())
-            waitOneFullHardwareCycle();
+            idle();
     }
 
     public void simpleWaitS(double seconds) throws InterruptedException {

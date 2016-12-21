@@ -12,7 +12,7 @@ public class BeaconBallRed extends StrykeAutonomous {
         telemetry.addData("Status", "Initializing hardware...");
         telemetry.update();
         initHardware();
-        hitter.setPosition(MIDDLE);
+
         releaseLeft.setPosition(1);
         releaseRight.setPosition(0.7);
         beaconColor.enableLed(false);
@@ -97,10 +97,10 @@ public class BeaconBallRed extends StrykeAutonomous {
         Thread.sleep(500);
         //Align servo
         if (left) {
-            hitter.setPosition(LEFT);
+
 
         } else {
-            hitter.setPosition(RIGHT);
+
         }
 
         Thread.sleep(500);

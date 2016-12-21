@@ -12,7 +12,7 @@ public class RedAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Initializing hardware...");
         telemetry.update();
         initHardware();
-        hitter.setPosition(MIDDLE);
+
         releaseLeft.setPosition(1);
         releaseRight.setPosition(0.7);
         beaconColor.enableLed(false);
@@ -110,7 +110,7 @@ public class RedAutonomous extends StrykeAutonomous {
         //back away
         encoderDrive(8, -0.1, getDriveMotors());
 
-        hitter.setPosition(MIDDLE);
+
         stopDriveMotors();
         Thread.sleep(200);
         telemetry.addData("Status", "Turning towards the second beacon");
@@ -160,10 +160,10 @@ public class RedAutonomous extends StrykeAutonomous {
         Thread.sleep(500);
         //Align servo
         if (left) {
-            hitter.setPosition(LEFT);
+
 
         } else {
-            hitter.setPosition(RIGHT);
+
         }
 
         Thread.sleep(500);
