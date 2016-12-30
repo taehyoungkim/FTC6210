@@ -55,9 +55,9 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double HUGGER_LEFT_UP = 1;
     public static final double HUGGER_RIGHT_UP = 0.7;
     public static final double HUGGER_RIGHT_DOWN = 1;
-    public static final double HUGGER_LEFT_DOWN = 1;
-    public static final double BALL_POPPER_IDLE = 0;
-    public static final double BALL_POPPER_POP = 0.9;
+    public static final double HUGGER_LEFT_DOWN = 0.7;
+    public static final double BALL_POPPER_IDLE = 1;
+    public static final double BALL_POPPER_POP = 0.2;
 
     public static double LIFT_SPEED = 1;
     public static double SLOW_MODE_SCALE = 0.6;
@@ -74,6 +74,7 @@ public class StrykeOpMode extends LinearOpMode {
     public ColorSensor beaconColor;
     public Servo releaseLeft, releaseRight, ballPopper;
     public CRServo beaconRack;
+    public Thread shootingThread;
 
     boolean halfSpeed = false;
     int wheelDiam = 6;
@@ -82,11 +83,21 @@ public class StrykeOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
-        releaseLeft.setPosition(HUGGER_LEFT_UP);
-        releaseRight.setPosition(HUGGER_RIGHT_UP);
+        holdBallHugger();
         ballPopper.setPosition(BALL_POPPER_IDLE);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
+        shootingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    shootBall();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         GamepadListener gp1 = new GamepadListener(gamepad1);
         gp1.setOnReleased(GamepadListener.Button.A, new Runnable() {
@@ -97,7 +108,7 @@ public class StrykeOpMode extends LinearOpMode {
         });
 
         GamepadListener gp2 = new GamepadListener(gamepad2);
-        gp2.setOnReleased(GamepadListener.Button.B, new Runnable() {
+        gp2.setOnReleased(GamepadListener.Button.Y, new Runnable() {
             @Override
             public void run() {
                 new Thread(new Runnable() {
@@ -123,6 +134,8 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Left", leftRangeSensor.distanceCm());
+            telemetry.addData("Right", rightRangeSensor.distanceCm());
 
             gp1.update(gamepad1);
             gp2.update(gamepad2);
@@ -133,17 +146,17 @@ public class StrykeOpMode extends LinearOpMode {
                 beaconRack.setPower(1);
             } else if (gamepad1.dpad_right) {
                 beaconRack.setPower(-1);
-            }
+            } else beaconRack.setPower(0);
 
             // Drive controls
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, SLOW_MODE_SCALE),
-                        scaleGamepadInput(gamepad1.left_stick_y, -SLOW_MODE_SCALE));
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -SLOW_MODE_SCALE),
+                        scaleGamepadInput(gamepad1.right_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
             }
             else{
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -1),
-                        scaleGamepadInput(gamepad1.right_stick_y, 1));
+                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 1),
+                        scaleGamepadInput(gamepad1.right_stick_y, -1));
                 telemetry.addData("Reversed", "No!");
             }
 
@@ -170,10 +183,10 @@ public class StrykeOpMode extends LinearOpMode {
                 liftTwo.setPower(0);
             }
 
-            if (gamepad2.y)
+            if (gamepad2.a)
                 releaseBallHugger();
 
-            if (gamepad2.a)
+            if (gamepad2.x)
                 holdBallHugger();
 
 
@@ -285,13 +298,13 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void holdBallHugger() {
-        releaseLeft.setPosition(HUGGER_LEFT_UP);
-        releaseRight.setPosition(HUGGER_RIGHT_UP);
+        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
+        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
     }
 
     public void releaseBallHugger() {
-        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
-        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
+        releaseLeft.setPosition(HUGGER_LEFT_UP);
+        releaseRight.setPosition(HUGGER_RIGHT_UP);
     }
 
     // Set a servo's position with respect for time. Used for slowly setting position of a servo
@@ -337,16 +350,16 @@ public class StrykeOpMode extends LinearOpMode {
 
     // AUTONOMOUS METHODS
     public void shootBall() throws InterruptedException {
-        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, shooter);
-        while(shooter.isBusy()) idle();
-        int start = getAverageEncoderPosition(shooter);
-        shooter.setPower(0.6);
-        long startTime = System.currentTimeMillis();
-        while(shooter.getCurrentPosition() - start < encoderPPR) {
+        int startPosition = shooter.getCurrentPosition();
+        shooter.setPower(-0.6);
+        long endTime = System.currentTimeMillis() + 1000;
+        while(Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis()) {
+            telemetry.addData("shooter" , shooter.getCurrentPosition());
+            telemetry.update();
             idle();
-            if(startTime + 2000 <= System.currentTimeMillis())
-                return;
+
         }
+        shooter.setPower(0);
 
     }
 
