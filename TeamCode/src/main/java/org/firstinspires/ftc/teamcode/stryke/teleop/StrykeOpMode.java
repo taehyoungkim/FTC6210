@@ -82,6 +82,8 @@ public class StrykeOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        boolean debug = gamepad1.a;
+
         initHardware();
         holdBallHugger();
         ballPopper.setPosition(BALL_POPPER_IDLE);
@@ -126,16 +128,31 @@ public class StrykeOpMode extends LinearOpMode {
 
         stopDriveMotors();
 
+        if(debug) {
+            telemetry.addData("Status", "Calibrating Gyro");
+            telemetry.update();
+            gyroSensor.calibrate();
+            while(gyroSensor.isCalibrating())
+                idle();
+        }
 
 
+        telemetry.addData("Status", "Ready.");
+        telemetry.update();
         waitForStart();
         runtime.reset();
 
         stopDriveMotors();
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Left", leftRangeSensor.distanceCm());
-            telemetry.addData("Right", rightRangeSensor.distanceCm());
+            if(debug) {
+                telemetry.addData("Left US", leftRangeSensor.distanceCm());
+                telemetry.addData("Right US", rightRangeSensor.distanceCm());
+                telemetry.addData("Gyro Heading", gyroSensor.getHeading());
+                telemetry.addData("ODS", ods.getLightDetected());
+                telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
+            }
+
 
             gp1.update(gamepad1);
             gp2.update(gamepad2);
