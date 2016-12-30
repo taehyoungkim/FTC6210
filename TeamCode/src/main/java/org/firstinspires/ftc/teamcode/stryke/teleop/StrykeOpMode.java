@@ -148,8 +148,8 @@ public class StrykeOpMode extends LinearOpMode {
 
             if(debug) {
                 telemetry.addData("Status", "Debug Mode");
-                telemetry.addData("Left US", leftRangeSensor.distanceCm());
-                telemetry.addData("Right US", rightRangeSensor.distanceCm());
+                telemetry.addData("Left US", leftRangeSensor.getUltraSonicDistance());
+                telemetry.addData("Right US", rightRangeSensor.getRawUltraSonicDistance());
                 telemetry.addData("Gyro Heading", gyroSensor.getHeading());
                 telemetry.addData("ODS", ods.getLightDetected());
                 telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
@@ -169,13 +169,13 @@ public class StrykeOpMode extends LinearOpMode {
 
             // Drive controls
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, -SLOW_MODE_SCALE),
-                        scaleGamepadInput(gamepad1.right_stick_y, SLOW_MODE_SCALE));
+                setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, -SLOW_MODE_SCALE),
+                        scaleGamepadInput(-gamepad1.right_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
             }
             else{
-                setDriveSpeed(scaleGamepadInput(gamepad1.left_stick_y, 1),
-                        scaleGamepadInput(gamepad1.right_stick_y, -1));
+                setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
+                        scaleGamepadInput(-gamepad1.right_stick_y, -1));
                 telemetry.addData("Reversed", "No!");
             }
 
@@ -213,7 +213,7 @@ public class StrykeOpMode extends LinearOpMode {
                 ballPopper.setPosition(BALL_POPPER_POP);
             else ballPopper.setPosition(BALL_POPPER_IDLE);
 
-            if(gamepad2.y && shootingThread.isAlive())
+            if(gamepad2.y && !shootingThread.isAlive())
                 shootingThread.start();
 
             telemetry.update();
@@ -224,13 +224,13 @@ public class StrykeOpMode extends LinearOpMode {
 
     public void initHardware() {
         leftDriveFront = hardwareMap.dcMotor.get("fl");
-        leftDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDriveFront = hardwareMap.dcMotor.get("fr");
-        rightDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         leftDriveBack = hardwareMap.dcMotor.get("bl");
-        leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDriveBack = hardwareMap.dcMotor.get("br");
-        rightDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         liftOne = hardwareMap.dcMotor.get("one");
         liftTwo = hardwareMap.dcMotor.get("two");
@@ -373,7 +373,7 @@ public class StrykeOpMode extends LinearOpMode {
     public void shootBall() throws InterruptedException {
         int startPosition = shooter.getCurrentPosition();
         shooter.setPower(-0.6);
-        long endTime = System.currentTimeMillis() + 1000;
+        long endTime = System.currentTimeMillis() + 3000;
         while(Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis()) {
             telemetry.addData("shooter" , shooter.getCurrentPosition());
             telemetry.update();
@@ -449,7 +449,7 @@ public class StrykeOpMode extends LinearOpMode {
 
     public void simpleWait(long ms) throws InterruptedException {
         long stopTime = System.currentTimeMillis() + ms;
-        while(stopTime > System.currentTimeMillis())
+        while(stopTime > System.currentTimeMillis() && opModeIsActive())
             idle();
     }
 

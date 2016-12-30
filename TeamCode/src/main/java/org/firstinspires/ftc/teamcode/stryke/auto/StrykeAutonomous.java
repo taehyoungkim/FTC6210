@@ -126,7 +126,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         if(target < 0) target = 360 + target;
         boolean turnLeft = getDistance(target, current) < 0; // if we have to turn left
 
-        while(Math.abs(getDistance(target, current)) > 1){
+        while((Math.abs(getDistance(target, current)) > 1) && opModeIsActive()){
             current = getGyro().getHeading();
             boolean newTurnLeft = getDistance(target, current) < 0; // if we have to turn left
             if(newTurnLeft != turnLeft)
@@ -236,7 +236,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void align(double pow) throws InterruptedException {
-        while(ods.getLightDetected() < 0.4){
+        while(ods.getLightDetected() < 0.4 && opModeIsActive()){
             if(pow > 0) {
                 setLeftDriveSpeed(pow + 0.15); // turn to the right
                 setRightDriveSpeed(pow);
@@ -266,7 +266,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
         stopDriveMotors();
         Thread.sleep(300);  // Allow for beacon to flash
-        while (beaconColor.red() > beaconColor.blue()) {
+        while (beaconColor.red() > beaconColor.blue() && opModeIsActive()) {
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);
@@ -285,7 +285,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
         stopDriveMotors();
         Thread.sleep(300);  // Allow for beacon to flash
-        while (beaconColor.blue() > beaconColor.red()) {
+        while (beaconColor.blue() > beaconColor.red() && opModeIsActive()) {
             encoderDrive(3,-0.15, getDriveMotors()); // hit again
             stopDriveMotors();
             Thread.sleep(100);

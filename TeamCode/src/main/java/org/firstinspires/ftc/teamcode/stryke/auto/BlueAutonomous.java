@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous(name = "Blue Autonomous", group = "Auto")
 public class BlueAutonomous extends StrykeAutonomous {
@@ -13,9 +14,10 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.update();
         initHardware();
 
-        releaseLeft.setPosition(1);
-        releaseRight.setPosition(0.7);
+        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
+        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
         beaconColor.enableLed(false);
+        ballPopper.setPosition(BALL_POPPER_IDLE);
 
         telemetry.addData("Status", "Initializing gyro...");
         telemetry.update();
@@ -41,141 +43,139 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Positioning to shoot the ball");
         telemetry.update();
-        encoderDrive(10, 0.15, getDriveMotors());
-        //TODO: SHOOT
+        encoderDrive(25, 0.3, getDriveMotors());
+        shootBall();
+        Thread.sleep(500);
+        ballPopper.setPosition(BALL_POPPER_POP);
+        Thread.sleep(1000);
+        shootBall();
+        ballPopper.setPosition(BALL_POPPER_IDLE);
 
-        Thread.sleep(200);
+
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
-        turn(15, 0.2);
+        turn(20, 0.5);
         Thread.sleep(200);
 
         telemetry.addData("Heading", getGyro().getHeading());
 
-        telemetry.addData("Status", "Driving towards the first beacon");
+        telemetry.addData("Status", "Driving..");
         telemetry.update();
-
-        driveToLine();
-
-        Thread.sleep(100);
-
-        // overshoot the line
-        encoderDrive(5, 0.15, getDriveMotors());
-        align(0.25);
-
-
-//        while (leftRange.cmUltrasonic() > rightRange.cmUltrasonic()){
-//            setDriveSpeed(0.1,0.1);
-//        }
-//        while(ods.getLightDetected() > 0.3) {
-//            setDriveSpeed(0.15, 0.1);
-//            idle();
-//        }
-//
-//        while(ods.getLightDetected() < 0.3) {
-//            setDriveSpeed(-0.15, -0.1);
-//            idle();
-//        }
+        encoderDrive(30, 0.4, 5, getDriveMotors());
+        // back away slightly
+        //encoderDrive(1, -0.25, getDriveMotors());
 
         stopDriveMotors();
 
-        // Drive towards the beacon
-        encoderDrive(24,0.2,2.5,getDriveMotors());
-        stopDriveMotors();
 
-        // hit the beacon
-        hit();
-
-        //hit the beacon
-        //encoderDrive(10, 0.3, getDriveMotors());
-        //long initialHit = System.currentTimeMillis();
-//        telemetry.addData("Status", "Re-Calibrating the Gyro!");
+//        while(opModeIsActive()) {
+//            telemetry.addData("left", leftRangeSensor.distanceCm());
+//            telemetry.addData("right", rightRangeSensor.distanceCm());
+//            telemetry.update();
+//            idle();
+//        }
+//        telemetry.addData("Ultra" , leftRangeSensor.getUltraSonicDistance()  + " " + rightRangeSensor.getUltraSonicDistance());
 //        telemetry.update();
-//        getGyro().resetZAxisIntegrator();
-//        Thread.sleep(1000 * 3);
-//        while(getGyro().isCalibrating())
-//            idle();
-
-
-        //checkBlueBeacon(initialHit);
-
-        stopDriveMotors();
-
-        //back away
-        encoderDrive(2, -0.1, getDriveMotors());
-
-
-        stopDriveMotors();
-        Thread.sleep(200);
-        telemetry.addData("Status", "Turning towards the second beacon");
-        telemetry.update();
-        turn(-85, 0.2);
-        stopDriveMotors();
-
-
-
-        telemetry.addData("Status", "Driving towards the second beacon");
-        telemetry.update();
-        driveToLine();
-        Thread.sleep(100);
-
-        telemetry.addData("Status", "Line found! Aligning...");
-        telemetry.update();
-        //Overshoot the line a little
-        encoderDrive(3, 0.13, getDriveMotors());
-        stopDriveMotors();
-
-        // Turn until we are on the left side of the tape
-        align(0.25);
-        stopDriveMotors();
-
-
-        // Drive towards the beacon
-        encoderDrive(24,0.2,2.5,getDriveMotors());
-
-        stopDriveMotors();
-
-        hit();
-
-        //checkBlueBeacon();
-
-        stopDriveMotors();
-    }
-
-
-    private void hit() throws InterruptedException {
-        Thread.sleep(50); // Stop for sensor
-        boolean left = beaconColor.blue() > beaconColor.red();
-        Thread.sleep(50);
-        telemetry.addData("Status", "Left = " + left);
-        telemetry.update();
-        //backup
-        encoderDrive(4,-0.2,1,getDriveMotors());
-        Thread.sleep(500);
-        //Align servo
-        if (left) {
-
-            
-        } else {
-
-        }
-
-        Thread.sleep(500);
-        encoderDrive(10 ,0.2, 3, getDriveMotors()); // hit
-        stopDriveMotors();
-        Thread.sleep(300);
-        encoderDrive(3,-0.5, 1, getDriveMotors()); // backup again
-        stopDriveMotors();
-
-//         //just in case something goes wrong...
-//        while (beaconColor.red() > beaconColor.blue()) {
-//            encoderDrive(3,-0.5,getDriveMotors()); // backup
-//            stopDriveMotors();
-//            Thread.sleep(100);
-//            encoderDrive(3,0.15, getDriveMotors()); // hit again
-//            stopDriveMotors();
+//        Thread.sleep(3000);
+//
+//
+//        while (leftRangeSensor.getUltraSonicDistance() > rightRangeSensor.getUltraSonicDistance()
+//                && leftRangeSensor.getUltraSonicDistance() != -1 && rightRangeSensor.getUltraSonicDistance() != -1){
+//            setRightDriveSpeed(-0.4);
+//            Thread.sleep(10);
 //            idle();
 //        }
+
+        turn(-40, 0.3);
+
+
+        // drive to the 2nd beacon
+        driveToLine();
+
+        telemetry.addData("Status", "Leveling...");
+        telemetry.update();
+        simpleWaitS(1);
+        //Align with wall
+        double left = leftRangeSensor.distanceCm();
+        double right = rightRangeSensor.distanceCm();
+        while(left != right
+                && left != -1
+                && right != -1
+                && opModeIsActive() ) {
+
+            if(left < right)
+                setDriveSpeed(-0.3,  -0.3);
+            else setDriveSpeed(0.3, 0.3);
+            left = leftRangeSensor.distanceCm();
+            right = rightRangeSensor.distanceCm();
+            telemetry.addData("Left, Right", left + " , " + right);
+            telemetry.update();
+            simpleWait(10);
+            idle();
+        }
+        stopDriveMotors();
+
+        telemetry.addData("Left Right", left + " , " + right);
+        telemetry.update();
+        simpleWaitS(4);
+
+        stopDriveMotors();
+
+        // align beacon presser
+        encoderDrive(3, -0.4, getDriveMotors());
+        if(beaconColor.red() > beaconColor.blue()){
+            encoderDrive(5, -0.4, getDriveMotors());
+        }
+        stopDriveMotors();
+
+        // press
+        long endTime = System.currentTimeMillis() + 1000;
+        while (endTime > System.currentTimeMillis() && opModeIsActive()) {
+            beaconRack.setPower(0.3);
+            idle();
+        }
+        beaconRack.setPower(0);
+        // retract
+        endTime = System.currentTimeMillis() + 1000;
+        while (endTime > System.currentTimeMillis() && opModeIsActive()) {
+            beaconRack.setDirection(DcMotorSimple.Direction.REVERSE);
+            beaconRack.setPower(0.3);
+            idle();
+        }
+        beaconRack.setPower(0);
+
+        // go back for the first beacon
+        while(ods.getLightDetected() < 0.3 && opModeIsActive()) {
+            setDriveSpeed(-0.4, 0.44);
+            telemetry.addData("ODS", ods.getLightDetected());
+            telemetry.update();
+            idle();
+        }
+        stopDriveMotors();
+
+
+        // align beacon presser
+        encoderDrive(3, -0.4, getDriveMotors());
+        if(beaconColor.red() > beaconColor.blue()){
+            encoderDrive(5, -0.4, getDriveMotors());
+        }
+        stopDriveMotors();
+
+        //press
+        endTime = System.currentTimeMillis() + 1000;
+        while (endTime > System.currentTimeMillis() && opModeIsActive()) {
+            beaconRack.setDirection(DcMotorSimple.Direction.FORWARD);
+            beaconRack.setPower(0.3);
+            idle();
+        }
+        beaconRack.setPower(0);
+        stopDriveMotors();
+
+
+
+
+
     }
+
 
 }

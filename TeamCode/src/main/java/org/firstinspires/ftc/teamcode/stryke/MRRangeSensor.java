@@ -17,6 +17,23 @@ import java.util.ArrayList;
  */
 
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import java.util.ArrayList;
+
+/**
+ * Created by Steven on 10/20/2016.
+ */
+
+
 public class MRRangeSensor {
     private ElapsedTime runtime = new ElapsedTime();
     byte[] rangeCache; //The read will return an array of bytes.
@@ -33,7 +50,10 @@ public class MRRangeSensor {
     public MRRangeSensor(I2cDevice rangeSensor, I2cAddr addr) {
         this.rangeSensor = rangeSensor;
         this.rangeAddress = addr;
+        rangeCache = new byte[RANGE_READ_LENGTH];
         initReader();
+
+        if(!rangeReader.isArmed()) throw new IllegalStateException("Range reader isnt armed!!");
     }
 
 
@@ -49,7 +69,7 @@ public class MRRangeSensor {
         rangeReader.engage();
     }
 
-    public int cmUltrasonic() {
+    public int getUltraSonicDistance() {
         getRangeCache();
         return rangeCache[0] & 0xFF;
     }
@@ -72,7 +92,7 @@ public class MRRangeSensor {
     }
 
     public boolean inFrontOfBeacon() {
-        if (cmUltrasonic() < 8) {		//value needs to be tested/calculated
+        if (getUltraSonicDistance() < 8) {		//value needs to be tested/calculated
             return true;
         }
         return false;
@@ -112,6 +132,6 @@ public class MRRangeSensor {
 
     public double distanceCm() {
         double optical = cmOptical();
-        return Math.floor(optical > 0 ? optical : cmUltrasonic());
+        return Math.floor(optical > 0 ? optical : getUltraSonicDistance());
     }
 }

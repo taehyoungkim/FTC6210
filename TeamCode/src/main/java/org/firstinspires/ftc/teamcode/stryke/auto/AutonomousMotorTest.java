@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
+@Disabled
 @Autonomous(name = "Auto Motor Test!", group = "Testing")
 public class AutonomousMotorTest extends StrykeOpMode {
 

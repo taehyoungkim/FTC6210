@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 /**
  * Created by Taehyoung Kim on 10/3/16.
  */
+@Disabled
 @Autonomous(name="Sensor Test", group = "Testing")
 public class LineFollow extends StrykeOpMode {
 

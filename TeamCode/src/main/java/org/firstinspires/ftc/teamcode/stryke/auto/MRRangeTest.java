@@ -10,18 +10,19 @@ import org.firstinspires.ftc.teamcode.stryke.MRRangeSensor;
 @Autonomous(name = "Range Test")
 public class MRRangeTest extends LinearOpMode {
 
-    public MRRangeSensor hex34, hex36;
+    public MRRangeSensor leftRangeSensor, rightRangeSensor;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        hex34 = new MRRangeSensor(hardwareMap.i2cDevice.get("34"), I2cAddr.create8bit(0x34));
-        hex36 = new MRRangeSensor(hardwareMap.i2cDevice.get("36"), I2cAddr.create8bit(0x36));
+        leftRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("left"), I2cAddr.create8bit(0x34));
+        rightRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
+
 
         waitForStart();
 
         while(opModeIsActive()) {
-            telemetry.addData("0x34", hex34.distanceCm());
-            telemetry.addData("0x36", hex36.distanceCm());
+            telemetry.addData("left", leftRangeSensor.getUltraSonicDistance());
+            telemetry.addData("right", rightRangeSensor.getUltraSonicDistance());
             telemetry.update();
             idle();
         }

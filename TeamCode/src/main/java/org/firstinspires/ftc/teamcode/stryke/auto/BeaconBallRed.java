@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous(name = "Red Ball Autonomous", group = "Auto")
 public class BeaconBallRed extends StrykeAutonomous {
 
