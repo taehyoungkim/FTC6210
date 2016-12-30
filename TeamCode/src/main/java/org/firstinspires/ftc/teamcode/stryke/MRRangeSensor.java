@@ -18,10 +18,6 @@ import java.util.ArrayList;
 
 
 public class MRRangeSensor {
-
-    int averageROC;
-
-    public int prevUSDVal;
     private ElapsedTime runtime = new ElapsedTime();
     byte[] rangeCache; //The read will return an array of bytes.
 
@@ -37,7 +33,6 @@ public class MRRangeSensor {
     public MRRangeSensor(I2cDevice rangeSensor, I2cAddr addr) {
         this.rangeSensor = rangeSensor;
         this.rangeAddress = addr;
-        ModernRoboticsI2cRangeSensor sen;
         initReader();
     }
 
@@ -63,10 +58,6 @@ public class MRRangeSensor {
     public int getRawOptic() {
         getRangeCache();
         return rangeCache[1] & 0xFF;
-    }
-
-    public String getRunTime() {
-        return runtime.toString();
     }
 
     public ArrayList<String> getRangeCache() {
@@ -121,10 +112,6 @@ public class MRRangeSensor {
 
     public double distanceCm() {
         double optical = cmOptical();
-        return optical > 0 ? optical : cmUltrasonic();
-    }
-
-    public int getAverageChange(){
-        return averageROC;
+        return Math.floor(optical > 0 ? optical : cmUltrasonic());
     }
 }

@@ -44,6 +44,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
 import org.firstinspires.ftc.teamcode.stryke.MRRangeSensor;
 
@@ -82,7 +83,7 @@ public class StrykeOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        boolean debug = gamepad1.a;
+        boolean debug = gamepad1.a; // Hold A before init to enter sensor testing mode
 
         initHardware();
         holdBallHugger();
@@ -110,21 +111,21 @@ public class StrykeOpMode extends LinearOpMode {
         });
 
         GamepadListener gp2 = new GamepadListener(gamepad2);
-        gp2.setOnReleased(GamepadListener.Button.Y, new Runnable() {
-            @Override
-            public void run() {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            shootBall();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-            }
-        });
+//        gp2.setOnReleased(GamepadListener.Button.Y, new Runnable() {
+//            @Override
+//            public void run() {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            shootBall();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }).start();
+//            }
+//        });
 
         stopDriveMotors();
 
@@ -144,14 +145,15 @@ public class StrykeOpMode extends LinearOpMode {
 
         stopDriveMotors();
         while (opModeIsActive()) {
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+
             if(debug) {
+                telemetry.addData("Status", "Debug Mode");
                 telemetry.addData("Left US", leftRangeSensor.distanceCm());
                 telemetry.addData("Right US", rightRangeSensor.distanceCm());
                 telemetry.addData("Gyro Heading", gyroSensor.getHeading());
                 telemetry.addData("ODS", ods.getLightDetected());
                 telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
-            }
+            } else telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
             gp1.update(gamepad1);
@@ -211,6 +213,8 @@ public class StrykeOpMode extends LinearOpMode {
                 ballPopper.setPosition(BALL_POPPER_POP);
             else ballPopper.setPosition(BALL_POPPER_IDLE);
 
+            if(gamepad2.y && shootingThread.isAlive())
+                shootingThread.start();
 
             telemetry.update();
             idle();
@@ -435,13 +439,13 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
     }
 
-    public void gyroTurnTo(int targetDeg, double speed) {
+//  public void gyroTurnTo(int targetDeg, double speed) {
 //        if(!isGyroInitialized()){
 //            encoderTurn(targetDeg, speed);
 //            return;
 //        }
 //        gyroTurn(targetDeg - getGyro().getHeading(), speed);
-    }
+//  }
 
     public void simpleWait(long ms) throws InterruptedException {
         long stopTime = System.currentTimeMillis() + ms;
