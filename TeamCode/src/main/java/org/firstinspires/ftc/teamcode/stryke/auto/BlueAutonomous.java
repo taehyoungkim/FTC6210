@@ -43,7 +43,7 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Positioning to shoot the ball");
         telemetry.update();
-        encoderDrive(25, 0.3, getDriveMotors());
+        encoderDrive(22, 0.3, getDriveMotors());
         shootBall();
         Thread.sleep(500);
         ballPopper.setPosition(BALL_POPPER_POP);
@@ -54,14 +54,14 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         telemetry.addData("Status", "Turning towards the first beacon");
         telemetry.update();
-        turn(20, 0.5);
+        turn(35, 0.35);
         Thread.sleep(200);
 
         telemetry.addData("Heading", getGyro().getHeading());
 
         telemetry.addData("Status", "Driving..");
         telemetry.update();
-        encoderDrive(30, 0.4, 5, getDriveMotors());
+        encoderDrive(40, 0.4, 8, getDriveMotors());
         // back away slightly
         //encoderDrive(1, -0.25, getDriveMotors());
 
@@ -86,7 +86,10 @@ public class BlueAutonomous extends StrykeAutonomous {
 //            idle();
 //        }
 
-        turn(-40, 0.3);
+        while (getGyro().getHeading() > 0 && opModeIsActive()) {
+            setDriveSpeed(-0.4, -0.4);
+            idle();
+        }
 
 
         // drive to the 2nd beacon
@@ -95,36 +98,45 @@ public class BlueAutonomous extends StrykeAutonomous {
         telemetry.addData("Status", "Leveling...");
         telemetry.update();
         simpleWaitS(1);
-        //Align with wall
-        double left = leftRangeSensor.distanceCm();
-        double right = rightRangeSensor.distanceCm();
-        while(left != right
-                && left != -1
-                && right != -1
-                && opModeIsActive() ) {
-
-            if(left < right)
-                setDriveSpeed(-0.3,  -0.3);
-            else setDriveSpeed(0.3, 0.3);
-            left = leftRangeSensor.distanceCm();
-            right = rightRangeSensor.distanceCm();
-            telemetry.addData("Left, Right", left + " , " + right);
-            telemetry.update();
-            simpleWait(10);
-            idle();
-        }
+        // align with wall
+//        double left = leftRangeSensor.distanceCm();
+//        double right = rightRangeSensor.distanceCm();
+//        double prevLeft = left;
+//        double prevRight = right;
+//        while(left != right && opModeIsActive() ) {
+//            left = leftRangeSensor.distanceCm();
+//            right = rightRangeSensor.distanceCm();
+//
+//            // eliminate error values
+//            if (left == -1 || left == 255)
+//                left = prevLeft;
+//            else prevLeft = left;
+//            if (right == -1 || right == 255)
+//                right = prevRight;
+//            else prevRight = right;
+//
+//            if(left < right)
+//                setDriveSpeed(-0.35,  -0.35);
+//            else setDriveSpeed(0.35, 0.35);
+//
+//            telemetry.addData("Left, Right", left + " , " + right);
+//            telemetry.update();
+//            //simpleWait(10);
+//            idle();
+//        }
         stopDriveMotors();
 
-        telemetry.addData("Left Right", left + " , " + right);
-        telemetry.update();
-        simpleWaitS(4);
+
+
+//        telemetry.addData("Left Right", left + " , " + right);
+//        telemetry.update();
+//        simpleWaitS(4);
 
         stopDriveMotors();
 
         // align beacon presser
-        encoderDrive(3, -0.4, getDriveMotors());
         if(beaconColor.red() > beaconColor.blue()){
-            encoderDrive(5, -0.4, getDriveMotors());
+            encoderDrive(2, -0.4, getDriveMotors());
         }
         stopDriveMotors();
 
@@ -146,7 +158,7 @@ public class BlueAutonomous extends StrykeAutonomous {
 
         // go back for the first beacon
         while(ods.getLightDetected() < 0.3 && opModeIsActive()) {
-            setDriveSpeed(-0.4, 0.44);
+            setDriveSpeed(-0.4, 0.4);
             telemetry.addData("ODS", ods.getLightDetected());
             telemetry.update();
             idle();
@@ -155,9 +167,8 @@ public class BlueAutonomous extends StrykeAutonomous {
 
 
         // align beacon presser
-        encoderDrive(3, -0.4, getDriveMotors());
         if(beaconColor.red() > beaconColor.blue()){
-            encoderDrive(5, -0.4, getDriveMotors());
+            encoderDrive(2, -0.4, getDriveMotors());
         }
         stopDriveMotors();
 
@@ -170,10 +181,6 @@ public class BlueAutonomous extends StrykeAutonomous {
         }
         beaconRack.setPower(0);
         stopDriveMotors();
-
-
-
-
 
     }
 

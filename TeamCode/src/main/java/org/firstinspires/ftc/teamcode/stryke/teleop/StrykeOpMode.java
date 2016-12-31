@@ -59,6 +59,7 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double HUGGER_LEFT_DOWN = 0.7;
     public static final double BALL_POPPER_IDLE = 1;
     public static final double BALL_POPPER_POP = 0.2;
+    public static boolean shooterReady = true;
 
     public static double LIFT_SPEED = 1;
     public static double SLOW_MODE_SCALE = 0.6;
@@ -111,21 +112,24 @@ public class StrykeOpMode extends LinearOpMode {
         });
 
         GamepadListener gp2 = new GamepadListener(gamepad2);
-//        gp2.setOnReleased(GamepadListener.Button.Y, new Runnable() {
-//            @Override
-//            public void run() {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            shootBall();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }).start();
-//            }
-//        });
+        gp2.setOnPressed(GamepadListener.Button.Y, new Runnable() {
+            @Override
+            public void run() {
+                if(!shooterReady) return;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            shooterReady = false;
+                            shootBall();
+                            shooterReady = true;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        });
 
         stopDriveMotors();
 
@@ -212,9 +216,6 @@ public class StrykeOpMode extends LinearOpMode {
             if(gamepad2.dpad_left)
                 ballPopper.setPosition(BALL_POPPER_POP);
             else ballPopper.setPosition(BALL_POPPER_IDLE);
-
-            if(gamepad2.y && !shootingThread.isAlive())
-                shootingThread.start();
 
             telemetry.update();
             idle();

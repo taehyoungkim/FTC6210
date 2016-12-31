@@ -19,7 +19,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveToLine() throws InterruptedException {
         while(ods.getLightDetected() < 0.3) {
-            setDriveSpeed(0.15, -0.17);
+            setDriveSpeed(0.2, -0.2);
             telemetry.addData("ODS", ods.getLightDetected());
             telemetry.update();
             idle();
