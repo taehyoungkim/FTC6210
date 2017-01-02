@@ -47,9 +47,9 @@ public class ButtonMasher extends StrykeAutonomous {
     }
 
     //Drive towards center to shoot 2 balls
-    public void approachVortex() {
+    public void approachVortex() throws InterruptedException {
         statusTelemetry("Approaching vortex");
-        driveDistance(2 * 24, 0.5);
+        encoderDrive(2 * 24 + 20, 0.5 , getDriveMotors());
         stopDriveMotors();
     }
 
@@ -70,13 +70,25 @@ public class ButtonMasher extends StrykeAutonomous {
     public void goToFirstBeacon(double speed) throws InterruptedException {
         statusTelemetry("Backing away...");
         // Back away from center to get to beacon
-        driveDistance(24, -0.5);
+        encoderDrive(24 + 10, -0.5);
 
         statusTelemetry("Approaching...");
         //Angle from a 2,3,root 13 triangle
-        marginTurnTo(360 - 56, speed);
+        //marginTurnTo(360 - 56, speed);
+        int heading = gyroSensor.getHeading();
+        while(!(heading < 360-38 && heading > 180) && opModeIsActive()) {
+            heading = getGyro().getHeading();
+            setDriveSpeed(-speed, -speed);
+            idle();
+        }
+        stopDriveMotors();
+
         driveToLine();
-        marginTurnTo(270, speed);
+        while(!(heading < 270) && opModeIsActive()) {
+            heading = getGyro().getHeading();
+            setDriveSpeed(-speed, -speed);
+            idle();
+        }
     }
 
     // Hit the beacon 2 times for now
@@ -86,7 +98,7 @@ public class ButtonMasher extends StrykeAutonomous {
 
         statusTelemetry("Backing away");
         simpleWaitS(0.1);
-        driveDistance(24, -0.5);
+        encoderDrive(24, -0.5);
         stopDriveMotors();
 
         statusTelemetry("Waiting 5 seconds");
@@ -98,16 +110,26 @@ public class ButtonMasher extends StrykeAutonomous {
 
         statusTelemetry("Backing away");
         simpleWaitS(0.1);
-        driveDistance(24, -0.5);
+        encoderDrive(24, -0.5);
         stopDriveMotors();
     }
 
     // Line up with 2nd beacon's tape
     private void goToSecondBeacon(double speed) throws InterruptedException {
         statusTelemetry("Approaching...");
-        marginTurnTo(0, speed);
+        int heading = getGyro().getHeading();
+        while(!(heading > 0 && heading < 90) && opModeIsActive()) {
+            heading = getGyro().getHeading();
+            setDriveSpeed(speed, speed);
+            idle();
+        }
         driveToLine();
-        marginTurnTo(270, speed);
+        heading = getGyro().getHeading();
+        while(!(heading < 270 && heading > 200) && opModeIsActive()) {
+            heading = getGyro().getHeading();
+            setDriveSpeed(-speed, -speed);
+            idle();
+        }
     }
 
 
@@ -122,9 +144,9 @@ public class ButtonMasher extends StrykeAutonomous {
             deltaRight = lastRight - currentRight;
             lastLeft = currentLeft;
             lastRight = currentRight;
-            setDriveSpeed(speed, -speed);
+            setDriveSpeed(-speed, speed);
             idle();
-        } while ((deltaLeft == 0 || deltaRight == 0) && opModeIsActive());
+        } while ((deltaLeft < 2 || deltaRight < 2) && opModeIsActive());
         stopDriveMotors();
     }
 
@@ -142,7 +164,7 @@ public class ButtonMasher extends StrykeAutonomous {
             error = getDistance(target, heading);
             idle();
         }
-        while (Math.abs(error) < 4 && error < 0 == left && opModeIsActive());
+        while (Math.abs(error) < 4 && opModeIsActive());
         stopDriveMotors();
     }
 

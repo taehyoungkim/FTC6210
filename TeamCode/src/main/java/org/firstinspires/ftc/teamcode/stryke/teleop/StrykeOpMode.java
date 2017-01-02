@@ -311,7 +311,7 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public DcMotor[] getDriveMotors(){
-        return new DcMotor[]{leftDriveBack, leftDriveFront, rightDriveFront, rightDriveBack};
+        return new DcMotor[]{leftDriveBack, rightDriveBack};
     }
 
     // Servo Helper Methods
@@ -398,15 +398,17 @@ public class StrykeOpMode extends LinearOpMode {
         long endtime = System.currentTimeMillis() + timeMs;
 
             resetMotorEncoders();
-            while(rightDriveBack.isBusy()) idle();
+            //while(rightDriveBack.isBusy()) idle();
             setDriveSpeed(leftSpeed, rightSpeed);
             long startTime = System.currentTimeMillis() + timeMs;
-            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches) {
+            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches && opModeIsActive()) {
                 if(timeMs > 0 && System.currentTimeMillis() <= endtime) {
-                    stopDriveMotors();return;
+                    stopDriveMotors();
+                    return;
                 }
                 idle();
             }
+        stopDriveMotors();
 
 
     }
