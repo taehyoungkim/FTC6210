@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
-@Autonomous(name = "Red Masher")
-public class RedMasher extends StrykeAutonomous {
+@Autonomous(name = "Button Masher")
+public class ButtonMasher extends StrykeAutonomous {
+
+    boolean red;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -17,31 +18,47 @@ public class RedMasher extends StrykeAutonomous {
             speed = 0.4;
         else if (voltage < 12.9)
             speed = 0.47;
+        // equation derived from above
+        //double speed = 7/25 * voltage + 2041/500;
+
+        red = !gamepad1.x;
+        telemetry.addData("Selected", red ? "RED" : "BLUE");
+        telemetry.addData("Speed", speed);
+        telemetry.addData("Voltage", voltage);
+        telemetry.addData("Status", "Ready!");
+        telemetry.update();
 
         waitForStart();
         approachVortex();
         shootTwoBalls();
 
-
+        simpleWaitS(0.1);
 
         goToFirstBeacon(speed);
         mashBeacon();
 
+        simpleWaitS(0.1);
+
         goToSecondBeacon(speed);
         mashBeacon();
 
+        statusTelemetry("Done in " + runtime.seconds() + " seconds!");
 
     }
 
     //Drive towards center to shoot 2 balls
     public void approachVortex() {
+        statusTelemetry("Approaching vortex");
         driveDistance(2 * 24, 0.5);
+        stopDriveMotors();
     }
 
     // Shoot 2 balls into the vortex
     public void shootTwoBalls() throws InterruptedException {
+        statusTelemetry("Shooting 1st ball...");
         simpleWaitS(0.1);
         shootBall();
+        statusTelemetry("Shooting 2nd ball...");
         simpleWaitS(0.5);
         ballPopper.setPosition(BALL_POPPER_POP);
         simpleWaitS(1);
@@ -51,30 +68,46 @@ public class RedMasher extends StrykeAutonomous {
 
     //Turn from vortex and line up with 1st beacon
     public void goToFirstBeacon(double speed) throws InterruptedException {
+        statusTelemetry("Backing away...");
         // Back away from center to get to beacon
         driveDistance(24, -0.5);
+
+        statusTelemetry("Approaching...");
         //Angle from a 2,3,root 13 triangle
-        marginTurn(360-56, speed);
+        marginTurnTo(360 - 56, speed);
         driveToLine();
-        marginTurn(270, speed);
+        marginTurnTo(270, speed);
     }
 
     // Hit the beacon 2 times for now
     public void mashBeacon() throws InterruptedException {
+        statusTelemetry("Driving till stop");
         driveUntilStop(0.5);
+
+        statusTelemetry("Backing away");
         simpleWaitS(0.1);
         driveDistance(24, -0.5);
+        stopDriveMotors();
+
+        statusTelemetry("Waiting 5 seconds");
         simpleWaitS(5);
+
+
+        statusTelemetry("Driving till stop");
         driveUntilStop(0.5);
+
+        statusTelemetry("Backing away");
         simpleWaitS(0.1);
         driveDistance(24, -0.5);
+        stopDriveMotors();
     }
 
     // Line up with 2nd beacon's tape
     private void goToSecondBeacon(double speed) throws InterruptedException {
-        marginTurn(0, speed);
+        statusTelemetry("Approaching...");
+        marginTurnTo(0, speed);
         driveToLine();
-        marginTurn(270, speed);
+        marginTurnTo(270, speed);
     }
 
 
@@ -95,13 +128,27 @@ public class RedMasher extends StrykeAutonomous {
         stopDriveMotors();
     }
 
-    public void marginTurn(int target, double speed) {
-        int heading;
+    public void marginTurnTo(int target, double speed) {
+        if (!red && target != 0 && target != 180)
+            target = Math.abs(360 - target);
+
+        int heading = getGyro().getHeading();
+        double error = getDistance(target, heading);
+        boolean left = error < 0;
+        if (left) speed *= -1;
         do {
             heading = getGyro().getHeading();
             setDriveSpeed(speed, speed);
+            error = getDistance(target, heading);
             idle();
         }
-        while((heading > target || heading < target - 10) && opModeIsActive());
+        while (Math.abs(error) < 4 && error < 0 == left && opModeIsActive());
+        stopDriveMotors();
     }
+
+    public void statusTelemetry(Object data) {
+        telemetry.addData("Status", data);
+        telemetry.update();
+    }
+
 }

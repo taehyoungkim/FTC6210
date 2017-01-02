@@ -64,7 +64,7 @@ public class StrykeOpMode extends LinearOpMode {
     public static double LIFT_SPEED = 1;
     public static double SLOW_MODE_SCALE = 0.6;
 
-    private ElapsedTime runtime = new ElapsedTime();
+    public ElapsedTime runtime = new ElapsedTime();
 
     public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
     public DcMotor liftOne, liftTwo;

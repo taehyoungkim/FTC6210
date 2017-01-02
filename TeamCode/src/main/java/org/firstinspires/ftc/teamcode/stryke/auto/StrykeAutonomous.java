@@ -26,6 +26,9 @@ public class StrykeAutonomous extends StrykeOpMode {
         releaseRight.setPosition(HUGGER_RIGHT_DOWN);
         beaconColor.enableLed(false);
         ballPopper.setPosition(BALL_POPPER_IDLE);
+
+        telemetry.addData("Status", "Initialize done!");
+        telemetry.update();
     }
 
     /*
@@ -332,7 +335,7 @@ public class StrykeAutonomous extends StrykeOpMode {
             }
             idle();
         }
-        telemetry.addData("Status", "Ready.");
+        telemetry.addData("Status", "Initialize done!");
         telemetry.update();
     }
 }
