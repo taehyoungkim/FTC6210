@@ -264,6 +264,8 @@ public class StrykeOpMode extends LinearOpMode {
 
 
     public void resetMotorEncoders(){
+        telemetry.addData("Status", "reset Encoders");
+        telemetry.update();
         setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
     }
 

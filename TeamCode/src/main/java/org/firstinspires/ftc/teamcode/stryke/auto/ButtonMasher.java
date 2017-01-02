@@ -70,7 +70,7 @@ public class ButtonMasher extends StrykeAutonomous {
     public void goToFirstBeacon(double speed) throws InterruptedException {
         statusTelemetry("Backing away...");
         // Back away from center to get to beacon
-        encoderDrive(24 + 10, -0.5);
+        encoderDrive(24, -0.5);
 
         statusTelemetry("Approaching...");
         //Angle from a 2,3,root 13 triangle
@@ -133,21 +133,8 @@ public class ButtonMasher extends StrykeAutonomous {
     }
 
 
-    public void driveUntilStop(double speed) {
-        int lastLeft = leftDriveBack.getCurrentPosition(),
-                lastRight = rightDriveBack.getCurrentPosition();
-        int deltaLeft, deltaRight;
-        do {
-            int currentLeft = leftDriveBack.getCurrentPosition(),
-                    currentRight = rightDriveBack.getCurrentPosition();
-            deltaLeft = lastLeft - currentLeft;
-            deltaRight = lastRight - currentRight;
-            lastLeft = currentLeft;
-            lastRight = currentRight;
-            setDriveSpeed(-speed, speed);
-            idle();
-        } while ((deltaLeft < 2 || deltaRight < 2) && opModeIsActive());
-        stopDriveMotors();
+    public void driveUntilStop(double speed) throws InterruptedException {
+        encoderDrive(24 * 1,speed, 3, getDriveMotors());
     }
 
     public void marginTurnTo(int target, double speed) {

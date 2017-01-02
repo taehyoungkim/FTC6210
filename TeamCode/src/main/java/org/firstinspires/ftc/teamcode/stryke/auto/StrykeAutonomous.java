@@ -123,7 +123,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
         double endTime = System.currentTimeMillis() + time * 1000;
         resetMotorEncoders();
-        while(motors[0].isBusy()) idle();
+        //while(motors[0].isBusy()) idle();
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         while(getAverageEncoderPosition(motors)- offset<= pulses && (System.currentTimeMillis()) < endTime) {
             setDriveSpeed(speed, -speed);
