@@ -11,6 +11,23 @@ public class StrykeAutonomous extends StrykeOpMode {
     private int encoderPPR = 7 * 40;
     protected final double LEFT = 0, RIGHT = 1, MIDDLE= 0.5;
 
+    @Override
+    public void initHardware() {
+        telemetry.addData("Status", "Initializing hardware...");
+        telemetry.update();
+
+        super.initHardware();
+        leftDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
+        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
+        beaconColor.enableLed(false);
+        ballPopper.setPosition(BALL_POPPER_IDLE);
+    }
+
     /*
     ==============================================
     ================DRIVE METHODS=================
@@ -18,12 +35,15 @@ public class StrykeAutonomous extends StrykeOpMode {
      */
 
     public void driveToLine() throws InterruptedException {
-        while(ods.getLightDetected() < 0.3) {
+        double odsValue;
+        do {
+            odsValue = ods.getLightDetected();
             setDriveSpeed(0.2, -0.2);
-            telemetry.addData("ODS", ods.getLightDetected());
+            telemetry.addData("ODS", odsValue);
             telemetry.update();
             idle();
         }
+        while(odsValue < 0.3);
         stopDriveMotors();
     }
 
@@ -292,5 +312,27 @@ public class StrykeAutonomous extends StrykeOpMode {
             encoderDrive(3,0.5,getDriveMotors()); // backup
             idle();
         }
+    }
+
+    public void calibrateGyro() {
+        telemetry.addData("Status", "Initializing gyro...");
+        telemetry.update();
+        getGyro().calibrate();
+        int dots = 0;
+        long nextTime = System.currentTimeMillis() + 500;
+        while(getGyro().isCalibrating()){
+            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+                nextTime = System.currentTimeMillis() + 500;
+                String out = "Initializing gyro";
+                for(int i = 0; i < dots % 4; i ++)
+                    out += ".";
+                dots ++;
+                telemetry.addData("Status", out);
+                telemetry.update();
+            }
+            idle();
+        }
+        telemetry.addData("Status", "Ready.");
+        telemetry.update();
     }
 }
