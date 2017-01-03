@@ -75,7 +75,6 @@ public class StrykeOpMode extends LinearOpMode {
     public MRRangeSensor leftRangeSensor, rightRangeSensor;
     public ColorSensor beaconColor;
     public Servo releaseLeft, releaseRight, ballPopper;
-    public CRServo beaconRack;
     public Thread shootingThread;
 
     boolean halfSpeed = false;
@@ -164,12 +163,6 @@ public class StrykeOpMode extends LinearOpMode {
             gp2.update(gamepad2);
 
             // GAMEPAD 1
-            // Beacon controls
-            if(gamepad1.dpad_left){
-                beaconRack.setPower(1);
-            } else if (gamepad1.dpad_right) {
-                beaconRack.setPower(-1);
-            } else beaconRack.setPower(0);
 
             // Drive controls
             if(halfSpeed){
@@ -252,7 +245,6 @@ public class StrykeOpMode extends LinearOpMode {
         releaseLeft = hardwareMap.servo.get("releaseL");
         releaseRight = hardwareMap.servo.get("releaseR");
         ballPopper = hardwareMap.servo.get("pop");
-        beaconRack = hardwareMap.crservo.get("rack");
     }
 
     // **** HELPER METHODS ****

@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Autonomous(name = "Button Masher")
 public class ButtonMasher extends StrykeAutonomous {
 
-    boolean red;
-
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
@@ -20,9 +18,6 @@ public class ButtonMasher extends StrykeAutonomous {
             speed = 0.47;
         // equation derived from above
         //double speed = 7/25 * voltage + 2041/500;
-
-        red = !gamepad1.x;
-        telemetry.addData("Selected", red ? "RED" : "BLUE");
         telemetry.addData("Speed", speed);
         telemetry.addData("Voltage", voltage);
         telemetry.addData("Status", "Ready!");
@@ -37,19 +32,20 @@ public class ButtonMasher extends StrykeAutonomous {
         goToFirstBeacon(speed);
         mashBeacon();
 
-        simpleWaitS(0.1);
-
-        goToSecondBeacon(speed);
-        mashBeacon();
-
-        statusTelemetry("Done in " + runtime.seconds() + " seconds!");
-
+        encoderDrive(24 * 2.5, -0.5);
+        int heading = getGyro().getHeading();
+        while(heading < 90  || heading > 120) {
+            heading = getGyro().getHeading();
+            setDriveSpeed(speed + 0.05, speed + 0.2);
+            idle();
+        }
+        stopDriveMotors();
     }
 
     //Drive towards center to shoot 2 balls
     public void approachVortex() throws InterruptedException {
         statusTelemetry("Approaching vortex");
-        encoderDrive(2 * 24 + 20, 0.5 , getDriveMotors());
+        encoderDrive(2 * 24 + 20, 0.45 , getDriveMotors());
         stopDriveMotors();
     }
 
@@ -76,7 +72,7 @@ public class ButtonMasher extends StrykeAutonomous {
         //Angle from a 2,3,root 13 triangle
         //marginTurnTo(360 - 56, speed);
         int heading = gyroSensor.getHeading();
-        while(!(heading < 360-38 && heading > 180) && opModeIsActive()) {
+        while(!(heading < 360-36 && heading > 180) && opModeIsActive()) {
             heading = getGyro().getHeading();
             setDriveSpeed(-speed, -speed);
             idle();
@@ -95,69 +91,34 @@ public class ButtonMasher extends StrykeAutonomous {
     public void mashBeacon() throws InterruptedException {
         statusTelemetry("Driving till stop");
         driveUntilStop(0.5);
+        encoderDrive(4, -0.2);
+        simpleWaitS(0.5);
+        if(beaconColor.blue() > beaconColor.red()) {
+            statusTelemetry("Backing away");
+            simpleWaitS(0.1);
+            encoderDrive(24, -0.5);
+            stopDriveMotors();
+
+            statusTelemetry("Waiting 5 seconds");
+            simpleWaitS(5);
+
+            statusTelemetry("Driving till stop");
+            driveUntilStop(0.5);
+        }
 
         statusTelemetry("Backing away");
         simpleWaitS(0.1);
-        encoderDrive(24, -0.5);
+        encoderDrive(12, -0.5);
         stopDriveMotors();
-
-        statusTelemetry("Waiting 5 seconds");
-        simpleWaitS(5);
-
-
-        statusTelemetry("Driving till stop");
-        driveUntilStop(0.5);
-
-        statusTelemetry("Backing away");
-        simpleWaitS(0.1);
-        encoderDrive(24, -0.5);
-        stopDriveMotors();
-    }
-
-    // Line up with 2nd beacon's tape
-    private void goToSecondBeacon(double speed) throws InterruptedException {
-        statusTelemetry("Approaching...");
-        int heading = getGyro().getHeading();
-        while(!(heading > 0 && heading < 90) && opModeIsActive()) {
-            heading = getGyro().getHeading();
-            setDriveSpeed(speed, speed);
-            idle();
-        }
-        driveToLine();
-        heading = getGyro().getHeading();
-        while(!(heading < 270 && heading > 200) && opModeIsActive()) {
-            heading = getGyro().getHeading();
-            setDriveSpeed(-speed, -speed);
-            idle();
-        }
     }
 
 
     public void driveUntilStop(double speed) throws InterruptedException {
-        encoderDrive(24 * 1,speed, 3, getDriveMotors());
-    }
-
-    public void marginTurnTo(int target, double speed) {
-        if (!red && target != 0 && target != 180)
-            target = Math.abs(360 - target);
-
-        int heading = getGyro().getHeading();
-        double error = getDistance(target, heading);
-        boolean left = error < 0;
-        if (left) speed *= -1;
-        do {
-            heading = getGyro().getHeading();
-            setDriveSpeed(speed, speed);
-            error = getDistance(target, heading);
-            idle();
-        }
-        while (Math.abs(error) < 4 && opModeIsActive());
-        stopDriveMotors();
+        encoderDrive(24 / 4 * 3 - 3,speed, 1.3, getDriveMotors());
     }
 
     public void statusTelemetry(Object data) {
         telemetry.addData("Status", data);
         telemetry.update();
     }
-
 }
