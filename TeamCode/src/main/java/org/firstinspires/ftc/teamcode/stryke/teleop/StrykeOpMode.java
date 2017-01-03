@@ -66,13 +66,12 @@ public class StrykeOpMode extends LinearOpMode {
 
     public ElapsedTime runtime = new ElapsedTime();
 
-    public DcMotor leftDriveFront, rightDriveFront, leftDriveBack, rightDriveBack;
+    public DcMotor leftDriveBack, rightDriveBack;
     public DcMotor liftOne, liftTwo;
     public DcMotor shooter, manip;
     public GyroSensor gyroSensor;
     public OpticalDistanceSensor ods;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
-    public MRRangeSensor leftRangeSensor, rightRangeSensor;
     public ColorSensor beaconColor;
     public Servo releaseLeft, releaseRight, ballPopper;
     public Thread shootingThread;
@@ -151,8 +150,6 @@ public class StrykeOpMode extends LinearOpMode {
 
             if(debug) {
                 telemetry.addData("Status", "Debug Mode");
-                telemetry.addData("Left US", leftRangeSensor.getUltraSonicDistance());
-                telemetry.addData("Right US", rightRangeSensor.getRawUltraSonicDistance());
                 telemetry.addData("Gyro Heading", gyroSensor.getHeading());
                 telemetry.addData("ODS", ods.getLightDetected());
                 telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
@@ -217,10 +214,6 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void initHardware() {
-        leftDriveFront = hardwareMap.dcMotor.get("fl");
-        leftDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightDriveFront = hardwareMap.dcMotor.get("fr");
-        rightDriveFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         leftDriveBack = hardwareMap.dcMotor.get("bl");
         leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDriveBack = hardwareMap.dcMotor.get("br");
@@ -236,9 +229,6 @@ public class StrykeOpMode extends LinearOpMode {
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         ods = hardwareMap.opticalDistanceSensor.get("ods");
-
-        leftRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("left"), I2cAddr.create8bit(0x34));
-        rightRangeSensor = new MRRangeSensor(hardwareMap.i2cDevice.get("right"), I2cAddr.create8bit(0x36));
 
         beaconColor = hardwareMap.colorSensor.get("color");
 
@@ -273,11 +263,11 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void setRightDriveSpeed(double speed) {
-        setMotorSpeeds(speed, rightDriveBack, rightDriveFront);
+        setMotorSpeeds(speed, rightDriveBack);
     }
 
     public void setLeftDriveSpeed(double speed) {
-        setMotorSpeeds(speed, leftDriveBack, leftDriveFront);
+        setMotorSpeeds(speed, leftDriveBack);
     }
 
     public void setMotorSpeeds(double speed, DcMotor... motors) {
@@ -369,8 +359,8 @@ public class StrykeOpMode extends LinearOpMode {
         int startPosition = shooter.getCurrentPosition();
         shooter.setPower(-0.6);
         long endTime = System.currentTimeMillis() + 3000;
-        while(Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis()) {
-            telemetry.addData("shooter" , shooter.getCurrentPosition());
+        while (Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis()) {
+            telemetry.addData("shooter", shooter.getCurrentPosition());
             telemetry.update();
             idle();
 
@@ -378,71 +368,6 @@ public class StrykeOpMode extends LinearOpMode {
         shooter.setPower(0);
 
     }
-
-    public void driveDistance(double inches, double speed) {
-        driveDistance(inches, speed, -speed, -1);
-    }
-
-    public void driveDistance(double inches, double speed, int timeMs) {
-        driveDistance(inches, speed, -speed, timeMs);
-    }
-
-    public void driveDistance(double inches, double leftSpeed, double rightSpeed, long timeMs) {
-
-        long endtime = System.currentTimeMillis() + timeMs;
-
-            resetMotorEncoders();
-            //while(rightDriveBack.isBusy()) idle();
-            setDriveSpeed(leftSpeed, rightSpeed);
-            long startTime = System.currentTimeMillis() + timeMs;
-            while(getAverageEncoderPosition(getDriveMotors()) / encoderPPR * wheelDiam < inches && opModeIsActive()) {
-                if(timeMs > 0 && System.currentTimeMillis() <= endtime) {
-                    stopDriveMotors();
-                    return;
-                }
-                idle();
-            }
-        stopDriveMotors();
-
-
-    }
-
-    public void encoderTurn(double deltaDeg, double speed) {
-        encoderTurn(deltaDeg, speed, -1);
-    }
-
-    public void encoderTurn(double deltaDeg, double speed, int timeMs) {
-        double inchesNeeded = (18 * Math.PI) * (deltaDeg/360);
-        if(inchesNeeded < 0)
-            driveDistance(inchesNeeded, speed, speed, timeMs);
-        else
-            driveDistance(inchesNeeded, -speed, -speed, timeMs);
-    }
-
-    public void gyroTurn(int deltaDeg, double speed) {
-        if(!isGyroInitialized()){
-            encoderTurn(deltaDeg, speed);
-            return;
-        }
-        int errorTolerance = 2;
-        int targetHeading = getGyro().getHeading() + deltaDeg;
-        if(targetHeading > 0)
-            speed *= -1;
-        while(Math.abs(getGyro().getHeading() - targetHeading) < errorTolerance) {
-            // turnSpeed = speed * (degLeft/ totalDeg)
-            double turnSpeed = speed * Range.clip((getGyro().getHeading() - targetHeading) / (deltaDeg),0.5, 1);
-            setDriveSpeed(turnSpeed, turnSpeed);
-        }
-        stopDriveMotors();
-    }
-
-//  public void gyroTurnTo(int targetDeg, double speed) {
-//        if(!isGyroInitialized()){
-//            encoderTurn(targetDeg, speed);
-//            return;
-//        }
-//        gyroTurn(targetDeg - getGyro().getHeading(), speed);
-//  }
 
     public void simpleWait(long ms) throws InterruptedException {
         long stopTime = System.currentTimeMillis() + ms;
@@ -456,10 +381,6 @@ public class StrykeOpMode extends LinearOpMode {
 
     public GyroSensor getGyro() {
         return gyroSensor;
-    }
-
-    public boolean isGyroInitialized() {
-        return gyroSensor.isCalibrating();
     }
 
 

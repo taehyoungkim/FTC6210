@@ -2,8 +2,9 @@ package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Red Button Masher")
-public class ButtonMasher extends StrykeAutonomous {
+@Autonomous(name = "Blue Button Mash")
+public class BlueButtonMash extends StrykeAutonomous {
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -36,8 +37,8 @@ public class ButtonMasher extends StrykeAutonomous {
 
         encoderDrive(24 * 2.5, -0.5);
         int heading = getGyro().getHeading();
-        setDriveSpeed(speed + 0.05, speed + 0.2);
-        while((heading < 90  || heading > 120) && opModeIsActive()) {
+        setDriveSpeed(-speed - 0.05, -speed - 0.2);
+        while(heading < 270 && opModeIsActive()) {
             heading = getGyro().getHeading();
             idle();
         }
@@ -73,22 +74,19 @@ public class ButtonMasher extends StrykeAutonomous {
         encoderDrive(24, -0.5);
 
         statusTelemetry("Approaching...");
-        //Angle from a 2,3,root 13 triangle
-        //marginTurnTo(360 - 56, speed);
-        int heading = gyroSensor.getHeading();
-        setDriveSpeed(-speed, -speed);
-        while(!(heading < 360-36 && heading > 180) && opModeIsActive()) {
-            heading = getGyro().getHeading();
 
+        int heading = gyroSensor.getHeading();
+        setDriveSpeed(speed, speed);
+        while(heading < 36 && heading < 90 && opModeIsActive()) {
+            heading = getGyro().getHeading();
             idle();
         }
         stopDriveMotors();
 
         driveToLine();
 
-        heading = gyroSensor.getHeading();
-        setDriveSpeed(-speed, -speed);
-        while(!(heading < 270) && opModeIsActive()) {
+        setDriveSpeed(speed, speed);
+        while(heading < 90 && opModeIsActive()) {
             heading = getGyro().getHeading();
             idle();
         }
@@ -100,7 +98,7 @@ public class ButtonMasher extends StrykeAutonomous {
         driveUntilStop(0.5);
         encoderDrive(4, -0.2);
         simpleWaitS(0.5);
-        if(beaconColor.blue() > beaconColor.red()) {
+        if(beaconColor.blue() < beaconColor.red()) {
             statusTelemetry("Backing away");
             simpleWaitS(0.1);
             encoderDrive(24, -0.5);
