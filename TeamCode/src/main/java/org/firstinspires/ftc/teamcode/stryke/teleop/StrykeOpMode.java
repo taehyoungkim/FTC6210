@@ -109,6 +109,20 @@ public class StrykeOpMode extends LinearOpMode {
             }
         });
 
+        gp1.setOnPressed(GamepadListener.Button.DPAD_UP, new Runnable() {
+            @Override
+            public void run() {
+                SLOW_MODE_SCALE = Range.clip(SLOW_MODE_SCALE + 0.05, 0.2, 0.7);
+            }
+        });
+
+        gp1.setOnPressed(GamepadListener.Button.DPAD_DOWN, new Runnable() {
+            @Override
+            public void run() {
+                SLOW_MODE_SCALE = Range.clip(SLOW_MODE_SCALE - 0.05, 0.2, 0.7);
+            }
+        });
+
         GamepadListener gp2 = new GamepadListener(gamepad2);
         gp2.setOnPressed(GamepadListener.Button.Y, new Runnable() {
             @Override
@@ -153,7 +167,7 @@ public class StrykeOpMode extends LinearOpMode {
                 telemetry.addData("Gyro Heading", gyroSensor.getHeading());
                 telemetry.addData("ODS", ods.getLightDetected());
                 telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
-            } else telemetry.addData("Status", "Run Time: " + runtime.toString());
+            }
 
 
             gp1.update(gamepad1);
@@ -163,14 +177,15 @@ public class StrykeOpMode extends LinearOpMode {
 
             // Drive controls
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, -SLOW_MODE_SCALE),
-                        scaleGamepadInput(-gamepad1.right_stick_y, SLOW_MODE_SCALE));
+                setDriveSpeed(scaleGamepadInput(-gamepad1.right_stick_y, -SLOW_MODE_SCALE),
+                        scaleGamepadInput(-gamepad1.left_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
+                telemetry.addData("Speed" , SLOW_MODE_SCALE);
             }
             else{
                 setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
                         scaleGamepadInput(-gamepad1.right_stick_y, -1));
-                telemetry.addData("Reversed", "No!");
+                telemetry.addData("Reversed", "No");
             }
 
             // Manipulator Controls
@@ -179,6 +194,9 @@ public class StrykeOpMode extends LinearOpMode {
             } else if (gamepad1.right_trigger > 0.1) {
                 manip.setPower(gamepad1.right_trigger);
             } else manip.setPower(0);
+
+            if(gamepad1.b) SLOW_MODE_SCALE = 0.4;
+            if(gamepad1.x) SLOW_MODE_SCALE = 0.6;
 
 
             // GAMEPAD 2

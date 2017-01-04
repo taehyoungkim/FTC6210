@@ -84,7 +84,7 @@ public class ButtonMasher extends StrykeAutonomous {
         }
         stopDriveMotors();
 
-        driveToLine();
+        encoderDrive(2.5 * 24 * Math.sqrt(2) + 18, 0.4);
 
         heading = gyroSensor.getHeading();
         setDriveSpeed(-speed, -speed);
@@ -98,12 +98,20 @@ public class ButtonMasher extends StrykeAutonomous {
     public void mashBeacon() throws InterruptedException {
         statusTelemetry("Driving till stop");
         driveUntilStop(0.5);
-        encoderDrive(4, -0.2);
+        //encoderDrive(2, -0.2);
         simpleWaitS(0.5);
-        if(beaconColor.blue() > beaconColor.red()) {
+        int blue = 0,  red = 0;
+        long endTime = System.currentTimeMillis() + 2000;
+        while(System.currentTimeMillis() < endTime && opModeIsActive()) {
+            if(beaconColor.red() > beaconColor.blue())
+                red ++;
+            else blue ++;
+            idle();
+        }
+        if(blue > red) {
             statusTelemetry("Backing away");
             simpleWaitS(0.1);
-            encoderDrive(24, -0.5);
+            encoderDrive(12, -0.5);
             stopDriveMotors();
 
             statusTelemetry("Waiting 5 seconds");
@@ -112,7 +120,8 @@ public class ButtonMasher extends StrykeAutonomous {
             statusTelemetry("Driving till stop");
             driveUntilStop(0.5);
         }
-
+        statusTelemetry("Red: " + red + " Blue: " + blue);
+        simpleWaitS(2);
         statusTelemetry("Backing away");
         simpleWaitS(0.1);
         encoderDrive(12, -0.5);
