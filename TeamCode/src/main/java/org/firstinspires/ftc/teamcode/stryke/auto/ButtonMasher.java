@@ -27,20 +27,47 @@ public class ButtonMasher extends StrykeAutonomous {
         runtime.reset();
 
         approachVortex();
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
+        }
+
         shootTwoBalls();
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
+        }
 
         simpleWaitS(0.1);
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
+        }
 
         goToFirstBeacon(speed);
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
+        }
+
         mashBeacon();
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
+        }
 
         encoderDrive(24 * 2.5, -0.5);
-        int heading = getGyro().getHeading();
-        setDriveSpeed(speed + 0.05, speed + 0.2);
-        while((heading < 90  || heading > 120) && opModeIsActive()) {
-            heading = getGyro().getHeading();
-            idle();
+        if(isStopRequested()) {
+            stopDriveMotors();
+            return;
         }
+
+//        int heading = getGyro().getHeading();
+//        setDriveSpeed(speed + 0.05, speed + 0.2);
+//        while((heading < 90  || heading > 120) && opModeIsActive()) {
+//            heading = getGyro().getHeading();
+//            idle();
+//        }
         stopDriveMotors();
 
         statusTelemetry("Done with "+ (30 - runtime.seconds()) +" seconds left!");
@@ -79,18 +106,21 @@ public class ButtonMasher extends StrykeAutonomous {
         setDriveSpeed(-speed, -speed);
         while(!(heading < 360-36 && heading > 180) && opModeIsActive()) {
             heading = getGyro().getHeading();
-
-            idle();
+            if(isStopRequested())
+                return;
+            //idle();
         }
         stopDriveMotors();
 
-        encoderDrive(2.5 * 24 * Math.sqrt(2) + 18, 0.4);
+        encoderDrive(2.5 * 24 * Math.sqrt(2) + 20, 0.35, getDriveMotors());
 
         heading = gyroSensor.getHeading();
         setDriveSpeed(-speed, -speed);
-        while(!(heading < 270) && opModeIsActive()) {
+        while(!(heading < 276) && opModeIsActive()) {
             heading = getGyro().getHeading();
-            idle();
+            if(isStopRequested())
+                return;
+            //idle();
         }
     }
 
@@ -106,7 +136,9 @@ public class ButtonMasher extends StrykeAutonomous {
             if(beaconColor.red() > beaconColor.blue())
                 red ++;
             else blue ++;
-            idle();
+            //idle();
+            if(isStopRequested())
+                return;
         }
         if(blue > red) {
             statusTelemetry("Backing away");

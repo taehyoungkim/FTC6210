@@ -377,10 +377,9 @@ public class StrykeOpMode extends LinearOpMode {
         int startPosition = shooter.getCurrentPosition();
         shooter.setPower(-0.6);
         long endTime = System.currentTimeMillis() + 3000;
-        while (Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis()) {
+        while (Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis() && opModeIsActive()) {
             telemetry.addData("shooter", shooter.getCurrentPosition());
             telemetry.update();
-            idle();
 
         }
         shooter.setPower(0);

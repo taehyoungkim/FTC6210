@@ -43,7 +43,7 @@ public class StrykeAutonomous extends StrykeOpMode {
             telemetry.update();
             idle();
         }
-        while(odsValue < 0.3);
+        while(odsValue < 0.3 && opModeIsActive());
         stopDriveMotors();
     }
 
@@ -102,12 +102,17 @@ public class StrykeAutonomous extends StrykeOpMode {
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         setDriveSpeed(speed, -speed);
         int avg = getAverageEncoderPosition(motors);
-        while(avg <= pulses) {
+        while(avg <= pulses && opModeIsActive()) {
             avg = getAverageEncoderPosition(motors);
             telemetry.addData("Target", pulses);
             telemetry.addData("Current", avg);
             telemetry.update();
-            idle();
+            if(isStopRequested()) {
+                stopDriveMotors();
+                return;
+            }
+
+            //idle();
         }
         stopDriveMotors();
     }
@@ -121,12 +126,12 @@ public class StrykeAutonomous extends StrykeOpMode {
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         setDriveSpeed(speed, -speed);
         int avg = getAverageEncoderPosition(motors);
-        while(avg - offset<= pulses && (System.currentTimeMillis()) < endTime) {
+        while(avg - offset<= pulses && (System.currentTimeMillis()) < endTime && opModeIsActive()) {
             avg = getAverageEncoderPosition(motors);
             telemetry.addData("Target", pulses);
             telemetry.addData("Current", avg);
             telemetry.update();
-            idle();
+            //idle();
         }
         setDriveSpeed(0, 0);
     }
