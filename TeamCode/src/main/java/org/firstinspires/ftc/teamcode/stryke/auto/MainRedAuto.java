@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Red Button Masher")
-public class ButtonMasher extends StrykeAutonomous {
+@Autonomous(name = "Main Red Auto")
+public class MainRedAuto extends StrykeAutonomous {
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -80,18 +80,7 @@ public class ButtonMasher extends StrykeAutonomous {
         stopDriveMotors();
     }
 
-    // Shoot 2 balls into the vortex
-    public void shootTwoBalls() throws InterruptedException {
-        statusTelemetry("Shooting 1st ball...");
-        simpleWaitS(0.1);
-        shootBall();
-        statusTelemetry("Shooting 2nd ball...");
-        simpleWaitS(0.5);
-        ballPopper.setPosition(BALL_POPPER_POP);
-        simpleWaitS(1);
-        shootBall();
-        ballPopper.setPosition(BALL_POPPER_IDLE);
-    }
+
 
     //Turn from vortex and line up with 1st beacon
     public void goToFirstBeacon(double speed) throws InterruptedException {
@@ -115,7 +104,7 @@ public class ButtonMasher extends StrykeAutonomous {
         encoderDrive(2.5 * 24 * Math.sqrt(2) + 20, 0.35, getDriveMotors());
 
         heading = gyroSensor.getHeading();
-        setDriveSpeed(-speed, -speed);
+        setDriveSpeed(-speed - 0.05, -speed);
         while(!(heading < 276) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested())
@@ -165,8 +154,5 @@ public class ButtonMasher extends StrykeAutonomous {
         encoderDrive(24 / 4 * 3 - 3,speed, 1.3, getDriveMotors());
     }
 
-    public void statusTelemetry(Object data) {
-        telemetry.addData("Status", data);
-        telemetry.update();
-    }
+
 }

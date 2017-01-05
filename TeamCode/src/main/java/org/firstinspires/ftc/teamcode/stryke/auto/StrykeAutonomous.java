@@ -97,6 +97,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void encoderDrive(double inches, double speed, DcMotor... motors) throws InterruptedException {
         if(motors.length == 0) motors = getDriveMotors();
+        if(inches < 0) speed = -Math.abs(speed);
         int pulses = (int) ((inches / (6 * Math.PI) * 280) * 1.6);
         resetMotorEncoders();
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
@@ -217,5 +218,18 @@ public class StrykeAutonomous extends StrykeOpMode {
         }
         telemetry.addData("Status", "Initialize done!");
         telemetry.update();
+    }
+
+    // Shoot 2 balls into the vortex
+    public void shootTwoBalls() throws InterruptedException {
+        statusTelemetry("Shooting 1st ball...");
+        simpleWaitS(0.1);
+        shootBall();
+        statusTelemetry("Shooting 2nd ball...");
+        simpleWaitS(0.5);
+        ballPopper.setPosition(BALL_POPPER_POP);
+        simpleWaitS(1);
+        shootBall();
+        ballPopper.setPosition(BALL_POPPER_IDLE);
     }
 }

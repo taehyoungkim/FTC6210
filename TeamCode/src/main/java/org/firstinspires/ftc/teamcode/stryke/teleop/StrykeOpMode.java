@@ -202,7 +202,7 @@ public class StrykeOpMode extends LinearOpMode {
             // GAMEPAD 2
             // Lift controls
             if (gamepad2.dpad_up){
-                if(runtime.seconds() > 60)
+                if (runtime.seconds() > 60)
                     holdBallHugger();
                 liftOne.setPower(-LIFT_SPEED);
                 liftTwo.setPower(-LIFT_SPEED);
@@ -221,7 +221,7 @@ public class StrykeOpMode extends LinearOpMode {
                 holdBallHugger();
 
 
-            if(gamepad2.dpad_left)
+            if (gamepad2.dpad_left || gamepad2.b)
                 ballPopper.setPosition(BALL_POPPER_POP);
             else ballPopper.setPosition(BALL_POPPER_IDLE);
 
@@ -309,7 +309,7 @@ public class StrykeOpMode extends LinearOpMode {
             else
                 total += motor.getCurrentPosition();
         }
-        return total/numMotors;
+        return numMotors == 0 ? 0 : total/numMotors;
     }
 
     public DcMotor[] getDriveMotors(){
@@ -378,12 +378,11 @@ public class StrykeOpMode extends LinearOpMode {
         shooter.setPower(-0.6);
         long endTime = System.currentTimeMillis() + 3000;
         while (Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis() && opModeIsActive()) {
-            telemetry.addData("shooter", shooter.getCurrentPosition());
+            telemetry.addData("Shooter", shooter.getCurrentPosition());
             telemetry.update();
 
         }
         shooter.setPower(0);
-
     }
 
     public void simpleWait(long ms) throws InterruptedException {
@@ -398,6 +397,11 @@ public class StrykeOpMode extends LinearOpMode {
 
     public GyroSensor getGyro() {
         return gyroSensor;
+    }
+
+    public void statusTelemetry(Object data) {
+        telemetry.addData("Status", data);
+        telemetry.update();
     }
 
 
