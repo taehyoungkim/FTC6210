@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
 
 @Autonomous(name = "Ball Shooter")
-public class ShootFar extends StrykeAutonomous {
+public class ShootConfigure extends StrykeAutonomous {
 
     static int balls = 2;
     static double speed = 0.5;
@@ -129,7 +129,6 @@ public class ShootFar extends StrykeAutonomous {
             }
 
         }
-
 
         if(!park && shouldGoBack)
             encoderDrive(dist, - speed);

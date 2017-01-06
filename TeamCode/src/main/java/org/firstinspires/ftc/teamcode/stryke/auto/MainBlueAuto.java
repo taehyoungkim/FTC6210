@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Blue Button Mash")
-public class BlueButtonMash extends StrykeAutonomous {
+@Autonomous(name = "Main Blue Auto")
+public class MainBlueAuto extends StrykeAutonomous {
 
 
     @Override
