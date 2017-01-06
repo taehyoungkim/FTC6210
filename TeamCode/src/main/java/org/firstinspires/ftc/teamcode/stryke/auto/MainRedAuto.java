@@ -101,7 +101,7 @@ public class MainRedAuto extends StrykeAutonomous {
         }
         stopDriveMotors();
 
-        encoderDrive(2.5 * 24 * Math.sqrt(2) + 20, 0.35, getDriveMotors());
+        encoderDrive(2.5 * 24 * Math.sqrt(2) + 30, 0.35, getDriveMotors());
 
         heading = gyroSensor.getHeading();
         setDriveSpeed(-speed - 0.05, -speed);
