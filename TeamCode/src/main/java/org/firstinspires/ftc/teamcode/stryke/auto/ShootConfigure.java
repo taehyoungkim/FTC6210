@@ -45,7 +45,9 @@ public class ShootConfigure extends StrykeAutonomous {
             @Override
             public void run() {
                 if(!enabled) return;
-                selected = (selected + 1) % 6;
+                selected = (selected + 1);
+                if(selected > 6) selected = 0
+                         ;
             }
         });
 
@@ -61,7 +63,7 @@ public class ShootConfigure extends StrykeAutonomous {
                     case(3) : waitTime -= 1;break;
                     case(4) : hitCap = !hitCap;break;
                     case(5) : park = !park; if(park) shouldGoBack = false;break;
-                    case(6) : far = !far;break;
+                    case(6) : far = !far; break;
                 }
             }
         });
@@ -106,7 +108,7 @@ public class ShootConfigure extends StrykeAutonomous {
         double dist;
         if(far)
             dist = 24 * 3 * Math.sqrt(2);
-        else dist = 24 * 2.5;
+        else dist = 2 * 24 + 20;
 
         encoderDrive(dist, speed);
         simpleWaitS(0.2);

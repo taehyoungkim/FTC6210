@@ -62,6 +62,14 @@ public class MainRedAuto extends StrykeAutonomous {
             return;
         }
 
+        statusTelemetry("Hitting cap  ");
+        long endTime = System.currentTimeMillis() + 3000;
+        setDriveSpeed(0.6,0.6);
+        while(System.currentTimeMillis() < endTime && opModeIsActive()) {
+            if(isStopRequested()) return;
+        }
+        stopDriveMotors();
+
 //        int heading = getGyro().getHeading();
 //        setDriveSpeed(speed + 0.05, speed + 0.2);
 //        while((heading < 90  || heading > 120) && opModeIsActive()) {

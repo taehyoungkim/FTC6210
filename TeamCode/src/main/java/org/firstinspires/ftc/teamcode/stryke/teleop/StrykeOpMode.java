@@ -45,6 +45,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.stryke.AnalogDistanceFinder;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
 import org.firstinspires.ftc.teamcode.stryke.MRRangeSensor;
 
@@ -74,6 +75,7 @@ public class StrykeOpMode extends LinearOpMode {
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
     public ColorSensor beaconColor;
     public Servo releaseLeft, releaseRight, ballPopper;
+
     public Thread shootingThread;
 
     boolean halfSpeed = false;
