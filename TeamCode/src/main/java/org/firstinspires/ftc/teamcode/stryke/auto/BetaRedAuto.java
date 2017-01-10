@@ -13,8 +13,8 @@ public class BetaRedAuto extends MainRedAuto {
     @Override
     public void initHardware() {
         super.initHardware();
-        leftFinder = (AnalogDistanceFinder)hardwareMap.analogInput.get("leftStick");
-        rightFinder = (AnalogDistanceFinder)hardwareMap.analogInput.get("rightStick");
+//        leftFinder = (AnalogDistanceFinder)hardwareMap.analogInput.get("leftStick");
+//        rightFinder = (AnalogDistanceFinder)hardwareMap.analogInput.get("rightStick");
         rightFinder.reversed = true;
     }
 
