@@ -55,11 +55,11 @@ public class StrykeOpMode extends LinearOpMode {
     /* Declare OpMode members. */
 
     public static final double HUGGER_LEFT_UP = 1;
-    public static final double HUGGER_RIGHT_UP = 0.7;
+    public static final double HUGGER_RIGHT_UP = 0.9;
     public static final double HUGGER_RIGHT_DOWN = 1;
     public static final double HUGGER_LEFT_DOWN = 0.7;
     public static final double BALL_POPPER_IDLE = 1;
-    public static final double BALL_POPPER_POP = 0.2;
+    public static final double BALL_POPPER_POP = 0.35;
     public static boolean shooterReady = true;
 
     public static double LIFT_SPEED = 1;

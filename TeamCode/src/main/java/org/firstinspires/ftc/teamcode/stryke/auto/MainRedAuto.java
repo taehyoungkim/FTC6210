@@ -1,17 +1,20 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Main Red Auto")
 public class MainRedAuto extends StrykeAutonomous {
 
-    private OpticalDistanceSensor wall;
+    private ModernRoboticsI2cRangeSensor wall;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
-        wall = hardwareMap.opticalDistanceSensor.get("wall");
+        wall = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("wall"));
         calibrateGyro();
 
         double speed = speedFromVoltage();
@@ -26,7 +29,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
         encoderDrive(5,0.7, getDriveMotors());
         int heading = getGyro().getHeading();
-        setDriveSpeed(0.5,0.5);
+        setDriveSpeed(-0.5,-0.5);
         while((heading > 360 - 34 || heading < 90) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested()) return;
@@ -57,7 +60,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
     private void goToSecondBeacon() throws InterruptedException {
         int heading = getGyro().getHeading();
-        setDriveSpeed(-speedFromVoltage(), -speedFromVoltage());
+        setDriveSpeed(-speedFromVoltage() - 0.2, -speedFromVoltage()- 0.2);
         while( heading < 3 && heading > 180){
             if(isStopRequested()) return;
         }
@@ -65,7 +68,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
         encoderDrive(24 * 3, 0.5, getDriveMotors());
 
-        setDriveSpeed(speedFromVoltage(), speedFromVoltage());
+        setDriveSpeed(speedFromVoltage() + 0.2, speedFromVoltage() + 0.2);
         while((heading > 276 || heading < 90) && opModeIsActive()) {
             if(isStopRequested()) return;
             heading = getGyro().getHeading();
@@ -119,7 +122,7 @@ public class MainRedAuto extends StrykeAutonomous {
             statusTelemetry("shooting those balls");
             encoderDrive(12, -0.5);
             int heading = getGyro().getHeading();
-            setDriveSpeed(0.4, 0.4);
+            setDriveSpeed(-0.4, -0.4);
             while(heading > 90 && opModeIsActive()) {
                 if(isStopRequested()) return;
                 heading = getGyro().getHeading();
@@ -127,7 +130,7 @@ public class MainRedAuto extends StrykeAutonomous {
             stopDriveMotors();
             shootTwoBalls();
             heading = getGyro().getHeading();
-            setDriveSpeed(-0.4, -0.4);
+            setDriveSpeed(0.4, 0.4);
             while(heading < 276 && opModeIsActive()) {
                 if(isStopRequested()) return;
                 heading = getGyro().getHeading();
@@ -160,8 +163,12 @@ public class MainRedAuto extends StrykeAutonomous {
 
     public void driveUntilStop(double speed) throws InterruptedException {
         setDriveSpeed(speed, -speed);
-        while(wall.getLightDetected() < 500 && opModeIsActive()) {
+        double dist = wall.getDistance(DistanceUnit.CM);
+        while(dist > 15 && opModeIsActive()) {
             if(isStopRequested()) return;
+            dist = wall.getDistance(DistanceUnit.CM);
+            telemetry.addData("dist", dist);
+            telemetry.update();
         }
         stopDriveMotors();
     }
@@ -175,6 +182,7 @@ public class MainRedAuto extends StrykeAutonomous {
             speed = 0.47;
         return speed;
     }
+
 
 
 }
