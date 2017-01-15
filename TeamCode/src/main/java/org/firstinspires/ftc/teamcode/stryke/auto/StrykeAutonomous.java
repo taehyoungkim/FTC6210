@@ -95,6 +95,8 @@ public class StrykeAutonomous extends StrykeOpMode {
         setDriveSpeed(0, 0);
     }
 
+    public static int lastEncoderValue;
+
     public void encoderDrive(double inches, double speed, DcMotor... motors) throws InterruptedException {
         if(motors.length == 0) motors = getDriveMotors();
         if(inches < 0) speed = -Math.abs(speed);
