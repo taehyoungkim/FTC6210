@@ -10,10 +10,11 @@ import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
 public class ShootConfigure extends StrykeAutonomous {
 
     static int balls = 2;
-    static double speed = 0.5;
-    static boolean shouldGoBack = false, hitCap = false, park = false, enabled = true, far = true;
+    static double speed = 0.4;
+    static boolean  hitCap = false, enabled = true, far = true;
+    static int afterShoot = 0;
     static int selected = 0;
-    static int waitTime = 4;
+    static int waitTime = 5;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -37,7 +38,7 @@ public class ShootConfigure extends StrykeAutonomous {
             public void run() {
                 if(!enabled) return;
                 selected = selected - 1;
-                if(selected < 0) selected = 6;
+                if(selected < 0) selected = 5;
             }
         });
 
@@ -46,8 +47,7 @@ public class ShootConfigure extends StrykeAutonomous {
             public void run() {
                 if(!enabled) return;
                 selected = (selected + 1);
-                if(selected > 6) selected = 0
-                         ;
+                if(selected > 5) selected = 0;
             }
         });
 
@@ -59,11 +59,10 @@ public class ShootConfigure extends StrykeAutonomous {
                 switch (selected) {
                     case(0) : balls = balls == 1 ? 2: 1; break;
                     case(1) : speed = Range.clip(speed - 0.05, 0.1, 0.7); break;
-                    case(2) : shouldGoBack = !shouldGoBack;if(shouldGoBack) park = false; break;
+                    case(2) : afterShoot = (afterShoot +1) % 3; break;
                     case(3) : waitTime -= 1;break;
                     case(4) : hitCap = !hitCap;break;
-                    case(5) : park = !park; if(park) shouldGoBack = false;break;
-                    case(6) : far = !far; break;
+                    case(5) : far = !far; break;
                 }
             }
         });
@@ -75,11 +74,10 @@ public class ShootConfigure extends StrykeAutonomous {
                 switch (selected) {
                     case(0) : balls = balls == 1 ? 2: 1; break;
                     case(1) : speed = Range.clip(speed + 0.05, 0.1, 0.7); break;
-                    case(2) : shouldGoBack = !shouldGoBack;if(shouldGoBack) park = false; break;
+                    case(2) : afterShoot = (afterShoot +1) % 3; break;
                     case(3) : waitTime += 1;break;
                     case(4) : hitCap = !hitCap;break;
-                    case(5) : park = !park; if(park) shouldGoBack = false;break;
-                    case(6) : far = !far;break;
+                    case(5) : far = !far;break;
                 }
             }
         });
@@ -89,11 +87,10 @@ public class ShootConfigure extends StrykeAutonomous {
             telemetry.addData("Status", enabled ? "Configure." : "Configured.");
             telemetry.addData(getPrefix(0) +"Balls", balls + "");
             telemetry.addData(getPrefix(1) +"Speed", speed + "");
-            telemetry.addData(getPrefix(2) + "Post-Shoot", (shouldGoBack ? "Return" : "Stay"));
+            telemetry.addData(getPrefix(2) + "Post-Shoot", (afterShoot== 0 ? "Return" : afterShoot == 1 ? "Park" : "Stay"));
             telemetry.addData(getPrefix(3) + "Wait time", waitTime+"");
             telemetry.addData(getPrefix(4) + "Snag cap", hitCap ? "Yes": "No");
-            telemetry.addData(getPrefix(5) + "Park", park ? "Yes": "No");
-            telemetry.addData(getPrefix(6) + "Starting Point", far ? "Far": "Close");
+            telemetry.addData(getPrefix(5) + "Starting Point", far ? "Far": "Close");
             telemetry.update();
             idle();
         }
@@ -116,23 +113,22 @@ public class ShootConfigure extends StrykeAutonomous {
             shootTwoBalls();
         else shootBall();
 
-        if(hitCap){
-            if(park) {
-                manip.setPower(-0.2);
-                encoderDrive(5, 0.2);
-                simpleWaitS(1);
-                encoderDrive(5, 0.2);
-            } else {
+        if(hitCap || afterShoot == 1){ // Hitting cap OR parking
+            if(afterShoot == 1) { // Park
                 manip.setPower(0.8);
-                encoderDrive(5, 0.2);
-                simpleWaitS(0.2);
-                encoderDrive(10, -0.2);
-                manip.setPower(0);
+                encoderDrive(10, speed);
+                simpleWaitS(1);
+                encoderDrive(15, speed);
+            } else { // Just hit cap
+                manip.setPower(0.8);
+                encoderDrive(10, speed);
+                simpleWaitS(1);
+                encoderDrive(10, -speed);
             }
 
         }
 
-        if(!park && shouldGoBack)
+        if(afterShoot == 0) // return to start
             encoderDrive(dist, - speed);
 
     }

@@ -57,7 +57,7 @@ public class MainBlueAuto extends StrykeAutonomous {
 
         heading = getGyro().getHeading();
         setDriveSpeed(0.7, 0.7);
-        while (heading < 200) {
+        while (heading < 195) { // 200
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
