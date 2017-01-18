@@ -56,13 +56,13 @@ public class MainRedAuto extends StrykeAutonomous {
 
         heading = getGyro().getHeading();
         setDriveSpeed(-0.7, -0.7);
-        while (heading > 170) {
+        while (heading > 158) {
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
         }
 
-        encoderDrive(57 ,0.7, getDriveMotors());
+        encoderDrive(55 ,0.7, getDriveMotors());
         shootTwoBalls();
         manip.setPower(-0.5);
 
@@ -109,7 +109,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
         int heading = gyroSensor.getHeading();
         setDriveSpeed(-speed - 0.2, -speed - 0.15);
-        while(!(heading < 280) && opModeIsActive()) {
+        while(!(heading < 283) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
@@ -120,7 +120,7 @@ public class MainRedAuto extends StrykeAutonomous {
     // Hit the beacon 2 times for now
     public void mashBeacon(boolean isLast) throws InterruptedException {
         statusTelemetry("Driving till stop");
-        driveUntilStop(0.37);
+        driveUntilStop(0.33);
         long refresh = System.currentTimeMillis() + 5000;
         //encoderDrive(2, -0.2);
         simpleWaitS(0.1);
@@ -138,7 +138,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
         long endTime = System.currentTimeMillis() + 500;
         while(System.currentTimeMillis() < endTime && opModeIsActive()) {
-            if(beaconColor.red() > beaconColor.blue())
+            if(redBeaconColor.red() > redBeaconColor.blue())
                 red ++;
             else blue ++;
             //idle();
