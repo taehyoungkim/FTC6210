@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.stryke.teleop;
 
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -183,11 +184,12 @@ public class StrykeOpMode extends LinearOpMode {
                         scaleGamepadInput(-gamepad1.left_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
                 telemetry.addData("Speed" , SLOW_MODE_SCALE);
+                telemetry.addData("Voltage", driveVoltage);
             }
             else{
                 setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
                         scaleGamepadInput(-gamepad1.right_stick_y, -1));
-                telemetry.addData("Reversed", "No");
+                telemetry.addData("Voltage", driveVoltage);
             }
 
             // Manipulator Controls
@@ -367,11 +369,23 @@ public class StrykeOpMode extends LinearOpMode {
                     , 1.00, 1.00
             };
 
-    public static double scaleGamepadInput(double power, double scale){
+    private static long nextPoll = System.currentTimeMillis() + 1000;
+    private static double driveVoltage;
+    public double scaleGamepadInput(double power, double scale){
         // Scale gamepad joystick movement in a nonlinear fashion
         if(Math.abs(power) <= 0.05)// Make sure joystick is actually being moved
             return 0;
         // clamp value between -1 and 1, the min and max values for joystick movement
+        if(System.currentTimeMillis() > nextPoll) {
+            driveVoltage = (hardwareMap.voltageSensor.get("left drive").getVoltage() + hardwareMap.voltageSensor.get("right drive").getVoltage()) / 2;
+            nextPoll = System.currentTimeMillis() + 1000;
+        }
+
+        if(driveVoltage < 12 && !halfSpeed)
+            power = power * 1.15;
+        else if (driveVoltage < 13 && !halfSpeed)
+            power = power * 1.05;
+
         power = Range.clip(power, -1, 1);
         int index = (int) Range.clip((int) (Math.abs(power) * values.length-1), 0, values.length-1); // Clamp index between 0 and 16
         return power < 0 ? -values[index] * scale : values[index] * scale; // Return negative value if power is < 0
