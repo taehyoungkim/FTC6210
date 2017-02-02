@@ -9,12 +9,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Autonomous(name = "Main BLUE Auto")
 public class MainBlueAuto extends StrykeAutonomous {
 
-    private ModernRoboticsI2cRangeSensor wall;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
-        wall = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("wall"));
+
         calibrateGyro();
 
         double speed = speedFromVoltage();
@@ -25,6 +25,8 @@ public class MainBlueAuto extends StrykeAutonomous {
         telemetry.update();
 
         waitForStart();
+        getGyro().resetZAxisIntegrator();
+        wait(20);
         runtime.reset();
 
         encoderDrive(8, 0.7, getDriveMotors());
@@ -123,7 +125,7 @@ public class MainBlueAuto extends StrykeAutonomous {
 
     // Hit the beacon 2 times for now
     public void mashBeacon(boolean isLast) throws InterruptedException {
-        statusTelemetry("Driving till stop");
+        statusTelemetry("Driving until 5cm");
         driveUntilStop(0.37);
         long refresh = System.currentTimeMillis() + 5000;
         //encoderDrive(2, -0.2);
@@ -145,26 +147,6 @@ public class MainBlueAuto extends StrykeAutonomous {
         }
         telemetry.addData("Beacon", "Red: " + red + " Blue: " + blue);
 
-//        if(shoot) {
-//            statusTelemetry("shooting those balls");
-//            encoderDrive(12, -0.5);
-//            int heading = getGyro().getHeading();
-//            setDriveSpeed(-0.7, -0.7);
-//            while(heading > 90 && opModeIsActive()) {
-//                if(isStopRequested()) return;
-//                heading = getGyro().getHeading();
-//            }
-//            stopDriveMotors();
-//            shootTwoBalls();
-//            heading = getGyro().getHeading();
-//            setDriveSpeed(0.7, 0.7);
-//            while(heading < 273 && opModeIsActive()) {
-//                if(isStopRequested()) return;
-//                heading = getGyro().getHeading();
-//            }
-//            stopDriveMotors();
-//        }
-
         stopDriveMotors();
         if(red > blue) {
             statusTelemetry("Backing away");
@@ -177,7 +159,7 @@ public class MainBlueAuto extends StrykeAutonomous {
                 if(isStopRequested()) return;
             }
 
-            statusTelemetry("Driving till stop");
+            statusTelemetry("Driving until 5cm");
             driveUntilStop(0.5);
         }
 
@@ -192,17 +174,7 @@ public class MainBlueAuto extends StrykeAutonomous {
     }
 
 
-    public void driveUntilStop(double speed) throws InterruptedException {
-        setDriveSpeed(speed, -speed);
-        double dist = wall.getDistance(DistanceUnit.CM);
-        while(dist > 5 && opModeIsActive()) {
-            if(isStopRequested()) return;
-            dist = wall.getDistance(DistanceUnit.CM);
-            telemetry.addData("dist", dist);
-            telemetry.update();
-        }
-        stopDriveMotors();
-    }
+
 
     public double speedFromVoltage() {
         double voltage = (hardwareMap.voltageSensor.get("left drive").getVoltage() + hardwareMap.voltageSensor.get("right drive").getVoltage()) / 2;
