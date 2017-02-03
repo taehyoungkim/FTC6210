@@ -154,13 +154,15 @@ public class StrykeAutonomous extends StrykeOpMode {
         double correction;
         double leftSpeed, rightSpeed;
         double max;
+
+        setDriveSpeed(-speed, speed);
         while(leftDrive1.isBusy() && leftDrive2.isBusy() && rightDrive2.isBusy() && rightDrive1.isBusy() && !isStopRequested()) {
             error = getDistance(lock, getGyro().getHeading());
             correction = Range.clip(error * 0.005, -1 , 1);
 
             double robotSpeed = speed;
             if(inches < 0) robotSpeed = -robotSpeed;
-            leftSpeed = -robotSpeed - correction;
+            leftSpeed = -robotSpeed + correction;
             rightSpeed = robotSpeed + correction;
 
             max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
