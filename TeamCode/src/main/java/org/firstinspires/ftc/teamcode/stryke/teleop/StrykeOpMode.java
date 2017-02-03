@@ -32,23 +32,18 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.stryke.teleop;
 
-import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.stryke.AnalogDistanceFinder;
+import org.firstinspires.ftc.teamcode.stryke.BreakBeamSensor;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
-import org.firstinspires.ftc.teamcode.stryke.MRRangeSensor;
 
 @TeleOp(name="Main Tele-Op", group="Linear Opmode")
 public class StrykeOpMode extends LinearOpMode {
@@ -59,37 +54,36 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double HUGGER_RIGHT_UP = 0.5;
     public static final double HUGGER_RIGHT_DOWN = 1;
     public static final double HUGGER_LEFT_DOWN = 0.7;
-    public static final double BALL_POPPER_IDLE = 1;
-    public static final double BALL_POPPER_POP = 0.35;
+    public static final double GATE_UP = 0.5;
+    public static final double GATE_DOWN = 0;
     public static boolean shooterReady = true;
 
     public static double LIFT_SPEED = 1;
+    public static double SHOOTER_SPEED = 0.7;
     public static double SLOW_MODE_SCALE = 0.6;
 
     public ElapsedTime runtime = new ElapsedTime();
 
-    public DcMotor leftDriveBack, rightDriveBack;
-    public DcMotor liftOne, liftTwo;
-    public DcMotor shooter, manip;
+    public DcMotor leftDrive1, leftDrive2, rightDrive1, rightDrive2;
+    public DcMotor lift1, lift2;
+    public DcMotor shooter, manipulator;
     public GyroSensor gyroSensor;
-    public OpticalDistanceSensor ods;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
-    public ColorSensor beaconColor, redBeaconColor;
-    public Servo releaseLeft, releaseRight, ballPopper;
+    public ColorSensor leftColorSensor, rightColorSensor;
+    public Servo huggerHolderLeft, huggerHolderRight, gate;
+    public BreakBeamSensor beam;
 
     public Thread shootingThread;
 
     boolean halfSpeed = false;
-    int wheelDiam = 6;
-    private int encoderPPR = 7 * 40;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        boolean debug = gamepad1.a; // Hold A before init to enter sensor testing mode
+        final boolean debug = gamepad1.a; // Hold A before init to enter sensor testing mode
 
         initHardware();
         holdBallHugger();
-        ballPopper.setPosition(BALL_POPPER_IDLE);
+        gate.setPosition(GATE_DOWN);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -109,6 +103,22 @@ public class StrykeOpMode extends LinearOpMode {
             @Override
             public void run() {
                 halfSpeed = !halfSpeed;
+            }
+        });
+
+        gp1.setOnPressed(GamepadListener.Button.Y, new Runnable() {
+            @Override
+            public void run() {
+                if(debug)
+                    gyroSensor.resetZAxisIntegrator();
+            }
+        });
+
+        gp1.setOnPressed(GamepadListener.Button.B, new Runnable() {
+            @Override
+            public void run() {
+                if(debug)
+                    beam.toggle();
             }
         });
 
@@ -149,11 +159,7 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
 
         if(debug) {
-            telemetry.addData("Status", "Calibrating Gyro");
-            telemetry.update();
-            gyroSensor.calibrate();
-            while(gyroSensor.isCalibrating())
-                idle();
+            calibrateGyro();
         }
 
 
@@ -161,15 +167,18 @@ public class StrykeOpMode extends LinearOpMode {
         telemetry.update();
         waitForStart();
         runtime.reset();
+        if(debug)
+            gyroSensor.resetZAxisIntegrator();
 
         stopDriveMotors();
         while (opModeIsActive()) {
 
             if(debug) {
                 telemetry.addData("Status", "Debug Mode");
-                telemetry.addData("Gyro Heading", gyroSensor.getHeading());
-                telemetry.addData("ODS", ods.getLightDetected());
-                telemetry.addData("Color", beaconColor.red() > beaconColor.blue() ? "RED" : "BLUE");
+                telemetry.addData("Gyro Heading", gyroSensor.getHeading() + "° from origin.");
+                telemetry.addData("Left Color", leftColorSensor.red() > leftColorSensor.blue() ? "RED" : "BLUE");
+                telemetry.addData("Right Color", rightColorSensor.red() > rightColorSensor.blue() ? "RED" : "BLUE");
+                telemetry.addData("Beam", beam.isBroken() ? "BROKEN" : "OPEN");
             }
 
 
@@ -194,10 +203,10 @@ public class StrykeOpMode extends LinearOpMode {
 
             // Manipulator Controls
             if(gamepad1.left_trigger > 0.1) {
-                manip.setPower(-gamepad1.left_trigger);
+                manipulator.setPower(-gamepad1.left_trigger);
             } else if (gamepad1.right_trigger > 0.1) {
-                manip.setPower(gamepad1.right_trigger);
-            } else manip.setPower(0);
+                manipulator.setPower(gamepad1.right_trigger);
+            } else manipulator.setPower(0);
 
             if(gamepad1.b) SLOW_MODE_SCALE = 0.4;
             if(gamepad1.x) SLOW_MODE_SCALE = 0.6;
@@ -208,14 +217,14 @@ public class StrykeOpMode extends LinearOpMode {
             if (gamepad2.dpad_up){
                 if (runtime.seconds() > 60)
                     holdBallHugger();
-                liftOne.setPower(-LIFT_SPEED);
-                liftTwo.setPower(-LIFT_SPEED);
+                lift1.setPower(-LIFT_SPEED);
+                lift2.setPower(-LIFT_SPEED);
             } else if (gamepad2.dpad_down) {
-                liftOne.setPower(LIFT_SPEED);
-                liftTwo.setPower(LIFT_SPEED);
+                lift1.setPower(LIFT_SPEED);
+                lift2.setPower(LIFT_SPEED);
             } else {
-                liftOne.setPower(0);
-                liftTwo.setPower(0);
+                lift1.setPower(0);
+                lift2.setPower(0);
             }
 
             if (gamepad2.a)
@@ -226,8 +235,8 @@ public class StrykeOpMode extends LinearOpMode {
 
 
             if (gamepad2.dpad_left || gamepad2.b)
-                ballPopper.setPosition(BALL_POPPER_POP);
-            else ballPopper.setPosition(BALL_POPPER_IDLE);
+                gate.setPosition(GATE_DOWN);
+            else gate.setPosition(GATE_UP);
 
             telemetry.update();
             idle();
@@ -236,31 +245,34 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void initHardware() {
-        leftDriveBack = hardwareMap.dcMotor.get("bl");
-        leftDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightDriveBack = hardwareMap.dcMotor.get("br");
-        rightDriveBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftDrive1 = hardwareMap.dcMotor.get("l");
+        leftDrive2 = hardwareMap.dcMotor.get("l2");
+        leftDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftDrive2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive1 = hardwareMap.dcMotor.get("r");
+        rightDrive2 = hardwareMap.dcMotor.get("r2");
+        rightDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        liftOne = hardwareMap.dcMotor.get("one");
-        liftTwo = hardwareMap.dcMotor.get("two");
+        lift1 = hardwareMap.dcMotor.get("one");
+        lift2 = hardwareMap.dcMotor.get("two");
 
         shooter = hardwareMap.dcMotor.get("shoot");
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        manip = hardwareMap.dcMotor.get("manip");
-        manip.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        manipulator = hardwareMap.dcMotor.get("manip");
+        manipulator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
-        ods = hardwareMap.opticalDistanceSensor.get("ods");
-
-        beaconColor = hardwareMap.colorSensor.get("color");
-        beaconColor.setI2cAddress(I2cAddr.create8bit(0x2c));
-
-        redBeaconColor = hardwareMap.colorSensor.get("red");
+        leftColorSensor = hardwareMap.colorSensor.get("left");
+        leftColorSensor.setI2cAddress(I2cAddr.create8bit(0x2c));
+        rightColorSensor = hardwareMap.colorSensor.get("right");
 
 
-        releaseLeft = hardwareMap.servo.get("releaseL");
-        releaseRight = hardwareMap.servo.get("releaseR");
-        ballPopper = hardwareMap.servo.get("pop");
+        huggerHolderLeft = hardwareMap.servo.get("hugL");
+        huggerHolderRight = hardwareMap.servo.get("hugR");
+        gate = hardwareMap.servo.get("gate");
+
+        beam = new BreakBeamSensor(hardwareMap.digitalChannel.get("rec"), hardwareMap.digitalChannel.get("trans"));
     }
 
     // **** HELPER METHODS ****
@@ -289,11 +301,11 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void setRightDriveSpeed(double speed) {
-        setMotorSpeeds(speed, rightDriveBack);
+        setMotorSpeeds(speed, rightDrive1, rightDrive2);
     }
 
     public void setLeftDriveSpeed(double speed) {
-        setMotorSpeeds(speed, leftDriveBack);
+        setMotorSpeeds(speed, leftDrive1, leftDrive2);
     }
 
     public void setMotorSpeeds(double speed, DcMotor... motors) {
@@ -321,7 +333,7 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public DcMotor[] getDriveMotors(){
-        return new DcMotor[]{leftDriveBack, rightDriveBack};
+        return new DcMotor[]{leftDrive1, leftDrive2, rightDrive1, rightDrive2};
     }
 
     // Servo Helper Methods
@@ -330,13 +342,13 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void holdBallHugger() {
-        releaseLeft.setPosition(HUGGER_LEFT_DOWN);
-        releaseRight.setPosition(HUGGER_RIGHT_DOWN);
+        huggerHolderLeft.setPosition(HUGGER_LEFT_DOWN);
+        huggerHolderRight.setPosition(HUGGER_RIGHT_DOWN);
     }
 
     public void releaseBallHugger() {
-        releaseLeft.setPosition(HUGGER_LEFT_UP);
-        releaseRight.setPosition(HUGGER_RIGHT_UP);
+        huggerHolderLeft.setPosition(HUGGER_LEFT_UP);
+        huggerHolderRight.setPosition(HUGGER_RIGHT_UP);
     }
 
     // Set a servo's position with respect for time. Used for slowly setting position of a servo
@@ -395,12 +407,13 @@ public class StrykeOpMode extends LinearOpMode {
     // AUTONOMOUS METHODS
     public void shootBall() throws InterruptedException {
         int startPosition = shooter.getCurrentPosition();
-        shooter.setPower(-0.6);
+        shooter.setPower(-SHOOTER_SPEED);
         long endTime = System.currentTimeMillis() + 3000;
-        while (Math.abs(shooter.getCurrentPosition() - startPosition) < 1440 && endTime > System.currentTimeMillis() && opModeIsActive()) {
-            telemetry.addData("Shooter", shooter.getCurrentPosition());
+        int pos = shooter.getCurrentPosition();
+        while (Math.abs(pos - startPosition) < 1440 && endTime > System.currentTimeMillis() && opModeIsActive()) {
+            pos = shooter.getCurrentPosition();
+            telemetry.addData("Shooter", Math.abs(pos-startPosition)/1440.0 +"%");
             telemetry.update();
-
         }
         shooter.setPower(0);
     }
@@ -421,6 +434,28 @@ public class StrykeOpMode extends LinearOpMode {
 
     public void statusTelemetry(Object data) {
         telemetry.addData("Status", data);
+        telemetry.update();
+    }
+
+    public void calibrateGyro() {
+        telemetry.addData("Status", "Initializing gyro...");
+        telemetry.update();
+        getGyro().calibrate();
+        int dots = 0;
+        long nextTime = System.currentTimeMillis() + 500;
+        while(getGyro().isCalibrating()){
+            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+                nextTime = System.currentTimeMillis() + 500;
+                String out = "Initializing gyro";
+                for(int i = 0; i < dots % 4; i ++)
+                    out += ".";
+                dots ++;
+                telemetry.addData("Status", out);
+                telemetry.update();
+            }
+            idle();
+        }
+        telemetry.addData("Status", "Initialize done!");
         telemetry.update();
     }
 

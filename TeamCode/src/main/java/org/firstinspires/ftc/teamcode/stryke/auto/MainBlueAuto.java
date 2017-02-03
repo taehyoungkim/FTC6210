@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Main BLUE Auto")
 public class MainBlueAuto extends StrykeAutonomous {
@@ -68,10 +64,10 @@ public class MainBlueAuto extends StrykeAutonomous {
         encoderDrive(60 , 0.7, getDriveMotors());
         shootTwoBalls();
 
-        manip.setPower(-0.5);
+        manipulator.setPower(-0.5);
 
         encoderDrive(30, 0.8, getDriveMotors());
-        manip.setPower(0);
+        manipulator.setPower(0);
 
         statusTelemetry("Done with "+ (30 - runtime.seconds()) +" seconds left!");
     }
@@ -138,25 +134,25 @@ public class MainBlueAuto extends StrykeAutonomous {
 
         long endTime = System.currentTimeMillis() + 500;
         while(System.currentTimeMillis() < endTime && opModeIsActive()) {
-            if(beaconColor.red() > beaconColor.blue())
+            if(leftColorSensor.red() > leftColorSensor.blue())
                 red ++;
-            else blue ++;
-            //idle();
-            if(isStopRequested())
-                return;
-        }
-        telemetry.addData("Beacon", "Red: " + red + " Blue: " + blue);
-
-        stopDriveMotors();
-        if(red > blue) {
-            statusTelemetry("Backing away");
-            simpleWaitS(0.05);
-            encoderDrive(9 , -0.5 , getDriveMotors());
             stopDriveMotors();
 
             statusTelemetry("Waiting till end");
             while(refresh > System.currentTimeMillis() && opModeIsActive()) {
                 if(isStopRequested()) return;
+                else blue ++;
+                //idle();
+                if(isStopRequested())
+                    return;
+            }
+            telemetry.addData("Beacon", "Red: " + red + " Blue: " + blue);
+
+            stopDriveMotors();
+            if(red > blue) {
+                statusTelemetry("Backing away");
+                simpleWaitS(0.05);
+                encoderDrive(9 , -0.5 , getDriveMotors());
             }
 
             statusTelemetry("Driving until 5cm");

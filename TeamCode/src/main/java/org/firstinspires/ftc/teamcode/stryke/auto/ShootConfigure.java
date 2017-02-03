@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
@@ -115,12 +114,12 @@ public class ShootConfigure extends StrykeAutonomous {
 
         if(hitCap || afterShoot == 1){ // Hitting cap OR parking
             if(afterShoot == 1) { // Park
-                manip.setPower(0.8);
+                manipulator.setPower(0.8);
                 encoderDrive(10, speed);
                 simpleWaitS(1);
                 encoderDrive(15, speed);
             } else { // Just hit cap
-                manip.setPower(0.8);
+                manipulator.setPower(0.8);
                 encoderDrive(10, speed);
                 simpleWaitS(1);
                 encoderDrive(10, -speed);

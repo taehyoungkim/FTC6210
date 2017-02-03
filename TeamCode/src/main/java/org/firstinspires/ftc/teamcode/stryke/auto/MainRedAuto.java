@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Main RED Auto")
 public class MainRedAuto extends StrykeAutonomous {
@@ -63,11 +59,11 @@ public class MainRedAuto extends StrykeAutonomous {
 
         encoderDrive(55 ,0.7, getDriveMotors());
         shootTwoBalls();
-        manip.setPower(-0.5);
+        manipulator.setPower(-0.5);
 
         
         encoderDrive(30, 0.8, getDriveMotors());
-        manip.setPower(0);
+        manipulator.setPower(0);
 
         statusTelemetry("Done with "+ (30 - runtime.seconds()) +" seconds left!");
     }
@@ -137,7 +133,7 @@ public class MainRedAuto extends StrykeAutonomous {
 
         long endTime = System.currentTimeMillis() + 500;
         while(System.currentTimeMillis() < endTime && opModeIsActive()) {
-            if(redBeaconColor.red() > redBeaconColor.blue())
+            if(rightColorSensor.red() > rightColorSensor.blue())
                 red ++;
             else blue ++;
             //idle();

@@ -32,18 +32,21 @@ public class SimpleOpMode extends StrykeOpMode {
             }
         });
 
+        waitForStart();
         telemetry.addData("Status", "Running, Good Luck!");
+
+
         while (opModeIsActive()) {
             gp2.update(gamepad1);
 
             if(gamepad1.left_trigger > 0.1)
-                manip.setPower(-gamepad1.left_trigger);
+                manipulator.setPower(-gamepad1.left_trigger);
             else if (gamepad1.right_trigger > 0.1)
-                manip.setPower(gamepad1.right_trigger);
+                manipulator.setPower(gamepad1.right_trigger);
 
             if(gamepad1.dpad_left)
-                ballPopper.setPosition(BALL_POPPER_POP);
-            else ballPopper.setPosition(BALL_POPPER_IDLE);
+                gate.setPosition(GATE_DOWN);
+            else gate.setPosition(GATE_UP);
 
             if(gamepad1.a) releaseBallHugger();
             if(gamepad1.x) holdBallHugger();
