@@ -54,6 +54,8 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
@@ -198,6 +200,8 @@ public class FtcRobotControllerActivity extends Activity {
     super.onCreate(savedInstanceState);
     RobotLog.writeLogcatToDisk();
     RobotLog.vv(TAG, "onCreate()");
+
+
 
     receivedUsbAttachmentNotifications = new ConcurrentLinkedQueue<UsbDevice>();
     eventLoop = null;

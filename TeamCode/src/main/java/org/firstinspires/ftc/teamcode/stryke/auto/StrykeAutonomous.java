@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 public class StrykeAutonomous extends StrykeOpMode {
@@ -63,16 +64,15 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void encoderDrive(double inches, double speed, double timeS, DcMotor... motors) throws InterruptedException {
+        double endTime = System.currentTimeMillis() + timeS * 1000;
         if(motors.length == 0) motors = getDriveMotors();
         if(inches < 0) speed = -Math.abs(speed);
-        int offset = getAverageEncoderPosition(motors);
-        double endTime = System.currentTimeMillis() + timeS * 1000;
         int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
         resetMotorEncoders();
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         setDriveSpeed(speed, -speed);
         int avg = getAverageEncoderPosition(motors);
-        while(avg - offset <= pulses && System.currentTimeMillis() < endTime && opModeIsActive()) {
+        while(avg <= pulses && opModeIsActive() && System.currentTimeMillis() < endTime) {
             avg = getAverageEncoderPosition(motors);
             telemetry.addData("Target", pulses);
             telemetry.addData("Current", avg);
@@ -82,6 +82,7 @@ public class StrykeAutonomous extends StrykeOpMode {
                 return;
             }
         }
+
         stopDriveMotors();
     }
 

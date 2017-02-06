@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.teamcode.stryke.BreakBeamSensor;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
 
@@ -51,8 +52,8 @@ public class StrykeOpMode extends LinearOpMode {
     /* Declare OpMode members. */
 
     public static final double HUGGER_LEFT_UP = 1;
-    public static final double HUGGER_RIGHT_UP = 0.5;
-    public static final double HUGGER_RIGHT_DOWN = 1;
+    public static final double HUGGER_RIGHT_UP = 0;
+    public static final double HUGGER_RIGHT_DOWN = 0.2;
     public static final double HUGGER_LEFT_DOWN = 0.7;
     public static final double GATE_UP = 0.5;
     public static final double GATE_DOWN = 0;
@@ -178,7 +179,7 @@ public class StrykeOpMode extends LinearOpMode {
                 telemetry.addData("Gyro Heading", gyroSensor.getHeading() + "° from origin.");
                 telemetry.addData("Left Color", leftColorSensor.red() > leftColorSensor.blue() ? "RED" : "BLUE");
                 telemetry.addData("Right Color", rightColorSensor.red() > rightColorSensor.blue() ? "RED" : "BLUE");
-                telemetry.addData("Beam", beam.isBroken() ? "BROKEN" : "OPEN");
+                //telemetry.addData("Beam", beam.isBroken() ? "BROKEN" : "OPEN");
             }
 
 
@@ -186,6 +187,8 @@ public class StrykeOpMode extends LinearOpMode {
             gp2.update(gamepad2);
 
             // GAMEPAD 1
+
+
 
             // Drive controls
             if(halfSpeed){
@@ -200,6 +203,7 @@ public class StrykeOpMode extends LinearOpMode {
                         scaleGamepadInput(-gamepad1.right_stick_y, -1));
                 telemetry.addData("Voltage", driveVoltage);
             }
+
 
             // Manipulator Controls
             if(gamepad1.left_trigger > 0.1) {
@@ -254,8 +258,8 @@ public class StrykeOpMode extends LinearOpMode {
         rightDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        lift1 = hardwareMap.dcMotor.get("one");
-        lift2 = hardwareMap.dcMotor.get("two");
+        lift1 = hardwareMap.dcMotor.get("lift1");
+        lift2 = hardwareMap.dcMotor.get("lift2");
 
         shooter = hardwareMap.dcMotor.get("shoot");
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -264,15 +268,19 @@ public class StrykeOpMode extends LinearOpMode {
 
         gyroSensor = hardwareMap.gyroSensor.get("gyro");
         leftColorSensor = hardwareMap.colorSensor.get("left");
-        leftColorSensor.setI2cAddress(I2cAddr.create8bit(0x2c));
+        leftColorSensor.setI2cAddress(I2cAddr.create8bit(0x2a));
         rightColorSensor = hardwareMap.colorSensor.get("right");
-
+        rightColorSensor.setI2cAddress(I2cAddr.create8bit(0x2c));
+        leftColorSensor.enableLed(false);
+        rightColorSensor.enableLed(false);
 
         huggerHolderLeft = hardwareMap.servo.get("hugL");
         huggerHolderRight = hardwareMap.servo.get("hugR");
         gate = hardwareMap.servo.get("gate");
 
-        beam = new BreakBeamSensor(hardwareMap.digitalChannel.get("rec"), hardwareMap.digitalChannel.get("trans"));
+
+
+        //beam = new BreakBeamSensor(hardwareMap.digitalChannel.get("rec"), hardwareMap.digitalChannel.get("trans"));
     }
 
     // **** HELPER METHODS ****
@@ -389,7 +397,7 @@ public class StrykeOpMode extends LinearOpMode {
             return 0;
         // clamp value between -1 and 1, the min and max values for joystick movement
         if(System.currentTimeMillis() > nextPoll) {
-            driveVoltage = (hardwareMap.voltageSensor.get("left drive").getVoltage() + hardwareMap.voltageSensor.get("right drive").getVoltage()) / 2;
+            driveVoltage = (hardwareMap.voltageSensor.get("r r2").getVoltage() + hardwareMap.voltageSensor.get("l l2").getVoltage()) / 2;
             nextPoll = System.currentTimeMillis() + 1000;
         }
 
