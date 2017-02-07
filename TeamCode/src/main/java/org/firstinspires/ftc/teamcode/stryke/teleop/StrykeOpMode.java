@@ -397,7 +397,7 @@ public class StrykeOpMode extends LinearOpMode {
             return 0;
         // clamp value between -1 and 1, the min and max values for joystick movement
         if(System.currentTimeMillis() > nextPoll) {
-            driveVoltage = (hardwareMap.voltageSensor.get("r r2").getVoltage() + hardwareMap.voltageSensor.get("l l2").getVoltage()) / 2;
+            driveVoltage = (hardwareMap.voltageSensor.get("l2 l").getVoltage() + hardwareMap.voltageSensor.get("r r1").getVoltage()) / 2;
             nextPoll = System.currentTimeMillis() + 1000;
         }
 
