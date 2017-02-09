@@ -55,8 +55,8 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double HUGGER_RIGHT_UP = 0;
     public static final double HUGGER_RIGHT_DOWN = 0.2;
     public static final double HUGGER_LEFT_DOWN = 0.7;
-    public static final double GATE_UP = 0.5;
-    public static final double GATE_DOWN = 0;
+    public static final double GATE_UP = 0;
+    public static final double GATE_DOWN = 0.5;
     public static boolean shooterReady = true;
 
     public static double LIFT_SPEED = 1;
