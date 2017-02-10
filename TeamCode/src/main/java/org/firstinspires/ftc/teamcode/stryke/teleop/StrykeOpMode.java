@@ -58,6 +58,7 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double GATE_UP = 0;
     public static final double GATE_DOWN = 0.5;
     public static boolean shooterReady = true;
+    private static double velocityLeft = 0.0, lastSpeedLeft = 0.0, velocityRight = 0.0, lastSpeedRight = 0.0;
 
     public static double LIFT_SPEED = 1;
     public static double SHOOTER_SPEED = 0.7;
@@ -188,19 +189,25 @@ public class StrykeOpMode extends LinearOpMode {
 
             // GAMEPAD 1
 
+            double targetLeft = scaleGamepadInput(gamepad1.left_stick_y, 1);
+            double targetRight = scaleGamepadInput(gamepad1.right_stick_y, 1);
+            double errorLeft = targetLeft - velocityLeft;
+            double errorRight = targetRight - velocityRight;
 
+            velocityLeft = Range.clip(velocityLeft + errorLeft * 0.003, -1, 1);
+            velocityRight = Range.clip(velocityRight + errorRight * 0.003, -1, 1);
 
             // Drive controls
             if(halfSpeed){
-                setDriveSpeed(scaleGamepadInput(-gamepad1.right_stick_y, -SLOW_MODE_SCALE),
+                setDriveSpeed(scaleGamepadInput(gamepad1.right_stick_y, SLOW_MODE_SCALE),
                         scaleGamepadInput(-gamepad1.left_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
                 telemetry.addData("Speed" , SLOW_MODE_SCALE);
                 telemetry.addData("Voltage", driveVoltage);
             }
             else{
-                setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
-                        scaleGamepadInput(-gamepad1.right_stick_y, -1));
+                setDriveSpeed(scaleGamepadInput(-velocityLeft, 1),
+                        scaleGamepadInput(velocityRight, 1));
                 telemetry.addData("Voltage", driveVoltage);
             }
 
