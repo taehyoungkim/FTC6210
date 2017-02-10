@@ -58,7 +58,8 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double GATE_UP = 0;
     public static final double GATE_DOWN = 0.5;
     public static boolean shooterReady = true;
-    private static double velocityLeft = 0.0, lastSpeedLeft = 0.0, velocityRight = 0.0, lastSpeedRight = 0.0;
+    private double velocityLeft = 0.0, lastSpeedLeft = 0.0, velocityRight = 0.0, lastSpeedRight = 0.0;
+    private long lastTime;
 
     public static double LIFT_SPEED = 1;
     public static double SHOOTER_SPEED = 0.7;
@@ -173,6 +174,7 @@ public class StrykeOpMode extends LinearOpMode {
             gyroSensor.resetZAxisIntegrator();
 
         stopDriveMotors();
+        lastTime = System.currentTimeMillis();
         while (opModeIsActive()) {
 
             if(debug) {
@@ -194,8 +196,13 @@ public class StrykeOpMode extends LinearOpMode {
             double errorLeft = targetLeft - velocityLeft;
             double errorRight = targetRight - velocityRight;
 
-            velocityLeft = Range.clip(velocityLeft + errorLeft * 0.003, -1, 1);
-            velocityRight = Range.clip(velocityRight + errorRight * 0.003, -1, 1);
+            long currentTime = System.currentTimeMillis();
+            long delta = currentTime - lastTime;
+            lastTime = currentTime;
+
+            velocityLeft = Range.clip(velocityLeft + (errorLeft * 1 * delta/1000), -1, 1);
+            velocityRight = Range.clip(velocityRight + (errorRight * 1 * delta/1000), -1, 1);
+
 
             // Drive controls
             if(halfSpeed){
