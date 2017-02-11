@@ -76,7 +76,7 @@ public class StrykeOpMode extends LinearOpMode {
     public Servo huggerHolderLeft, huggerHolderRight, gate;
     public BreakBeamSensor beam;
 
-    public Thread shootingThread;
+    public Thread shootingThread, manipulatorThread;
 
     boolean halfSpeed = false;
 
@@ -100,6 +100,7 @@ public class StrykeOpMode extends LinearOpMode {
                 }
             }
         });
+
 
         GamepadListener gp1 = new GamepadListener(gamepad1);
         gp1.setOnReleased(GamepadListener.Button.A, new Runnable() {
@@ -151,6 +152,10 @@ public class StrykeOpMode extends LinearOpMode {
                             shooterReady = false;
                             shootBall();
                             shooterReady = true;
+                            if (gamepad2.y) {
+
+                            }
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -158,6 +163,7 @@ public class StrykeOpMode extends LinearOpMode {
                 }).start();
             }
         });
+
 
         stopDriveMotors();
 
@@ -200,8 +206,8 @@ public class StrykeOpMode extends LinearOpMode {
             long delta = currentTime - lastTime;
             lastTime = currentTime;
 
-            velocityLeft = Range.clip(velocityLeft + (errorLeft * 1 * delta/1000), -1, 1);
-            velocityRight = Range.clip(velocityRight + (errorRight * 1 * delta/1000), -1, 1);
+            velocityLeft = Range.clip(velocityLeft + (errorLeft * 5 * delta/1000), -1, 1);
+            velocityRight = Range.clip(velocityRight + (errorRight * 5 * delta/1000), -1, 1);
 
 
             // Drive controls
@@ -256,10 +262,40 @@ public class StrykeOpMode extends LinearOpMode {
                 gate.setPosition(GATE_DOWN);
             else gate.setPosition(GATE_UP);
 
+            // rapid fire
+            //TODO: run the manipulator??
+            if (gamepad2.right_trigger > 0.3) {
+//                manipulatorThread = new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        manipulator.setPower(-1);
+//                    }
+//                });
+                while (gamepad2.right_trigger > 0.3) {
+                    manipulatorThread.start();
+                    shootBall();
+                    simpleWait(500);
+                    gate.setPosition(GATE_DOWN);
+                    simpleWait(500);
+                    gate.setPosition(GATE_UP);
+                    idle();
+                }
+            }
+//            else {
+//                if (manipulatorThread.isAlive())
+//                    stopManipulator();
+//
+//            }
+
             telemetry.update();
             idle();
         }
         stopDriveMotors();
+    }
+
+    public void stopManipulator() {
+        manipulatorThread = null;
+        // maybe just use manipulator.interrupt() instead of doing this?
     }
 
     public void initHardware() {
