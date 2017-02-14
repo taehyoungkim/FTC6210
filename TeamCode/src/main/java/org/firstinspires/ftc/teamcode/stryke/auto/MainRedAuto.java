@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Main RED Auto")
+@Autonomous(name = "Main RED Auto") //GEN3 FIELD
 public class MainRedAuto extends StrykeAutonomous {
 
     @Override
@@ -19,10 +19,10 @@ public class MainRedAuto extends StrykeAutonomous {
 
         waitForStart();
         getGyro().resetZAxisIntegrator();
-        wait(20);
+        simpleWait(200);
         runtime.reset();
 
-        encoderDrive(5 ,0.7, getDriveMotors());
+        encoderDrive(15 ,0.7, getDriveMotors());
         int heading = getGyro().getHeading();
         setDriveSpeed(-0.6,-0.6);
         while((heading > 360 - 34 || heading < 90) && opModeIsActive()) {
@@ -169,7 +169,7 @@ public class MainRedAuto extends StrykeAutonomous {
     }
 
     public double speedFromVoltage() {
-        double voltage = (hardwareMap.voltageSensor.get("left drive").getVoltage() + hardwareMap.voltageSensor.get("right drive").getVoltage()) / 2;
+        double voltage = (hardwareMap.voltageSensor.get("l2 l").getVoltage() + hardwareMap.voltageSensor.get("r r1").getVoltage()) / 2;
         double speed = 0.45;
         if (voltage > 13.15)
             speed = 0.4;

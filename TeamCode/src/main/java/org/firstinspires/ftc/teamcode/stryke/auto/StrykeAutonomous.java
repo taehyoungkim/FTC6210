@@ -95,7 +95,8 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void driveUntilStop(double speed) throws InterruptedException {
         setDriveSpeed(speed, -speed);
         double dist = wall.getDistance(DistanceUnit.CM);
-        while(dist > 5 && opModeIsActive()) {
+        // change distance accordingly
+        while(dist > 8 && opModeIsActive()) {
             if(isStopRequested()) return;
             dist = wall.getDistance(DistanceUnit.CM);
             telemetry.addData("dist", dist);

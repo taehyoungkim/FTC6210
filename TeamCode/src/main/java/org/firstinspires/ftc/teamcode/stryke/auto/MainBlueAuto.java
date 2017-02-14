@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.stryke.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Main BLUE Auto")
+@Autonomous(name = "Main BLUE Auto") //GEN 3 FIELD
 public class MainBlueAuto extends StrykeAutonomous {
 
 
@@ -22,13 +22,13 @@ public class MainBlueAuto extends StrykeAutonomous {
 
         waitForStart();
         getGyro().resetZAxisIntegrator();
-        wait(20);
+        simpleWait(200);
         runtime.reset();
 
-        encoderDrive(8, 0.7, getDriveMotors());
+        encoderDrive(20, 0.7, getDriveMotors());
         int heading = getGyro().getHeading();
-        setDriveSpeed(0.6, 0.6);
-        while((heading < 34) && opModeIsActive()) {
+        setDriveSpeed(0.45, 0.45);
+        while((heading < 35) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested()) return;
         }
@@ -55,18 +55,18 @@ public class MainBlueAuto extends StrykeAutonomous {
 
 
         heading = getGyro().getHeading();
-        setDriveSpeed(0.7, 0.7);
-        while (heading < 205) { // 200
+        setDriveSpeed(0.5, 0.5);
+        while (heading < 200) { // 200
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
         }
-        encoderDrive(60 , 0.7, getDriveMotors());
+        encoderDrive(60 , 0.6, getDriveMotors());
         shootTwoBalls();
 
         manipulator.setPower(-0.5);
 
-        encoderDrive(30, 0.8, getDriveMotors());
+        encoderDrive(30, 0.7, getDriveMotors());
         manipulator.setPower(0);
 
         statusTelemetry("Done with "+ (30 - runtime.seconds()) +" seconds left!");
@@ -105,13 +105,13 @@ public class MainBlueAuto extends StrykeAutonomous {
     public void goToFirstBeacon(double speed) throws InterruptedException {
         statusTelemetry("Approaching...");
 //        2.5 * 24 * Math.sqrt(2) + 40
-        encoderDrive(2.5 * 24 * Math.sqrt(2) + 47, speed, getDriveMotors());
+        encoderDrive(2.5 * 24 * Math.sqrt(2) - 27, speed, getDriveMotors());
 
         stopDriveMotors();
         simpleWaitS(0.05);
         int heading = gyroSensor.getHeading();
         setDriveSpeed(speed + 0.15, speed + 0.2);
-        while((heading < 80) && opModeIsActive()) {
+        while((heading < 77) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
@@ -173,7 +173,7 @@ public class MainBlueAuto extends StrykeAutonomous {
 
 
     public double speedFromVoltage() {
-        double voltage = (hardwareMap.voltageSensor.get("left drive").getVoltage() + hardwareMap.voltageSensor.get("right drive").getVoltage()) / 2;
+        double voltage = (hardwareMap.voltageSensor.get("l2 l").getVoltage() + hardwareMap.voltageSensor.get("r r1").getVoltage()) / 2;
         double speed = 0.45;
         if (voltage > 13.15)
             speed = 0.4;

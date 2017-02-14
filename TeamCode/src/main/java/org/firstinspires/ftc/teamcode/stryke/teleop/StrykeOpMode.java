@@ -57,7 +57,7 @@ public class StrykeOpMode extends LinearOpMode {
     public static final double HUGGER_LEFT_DOWN = 0.7;
     public static final double GATE_UP = 0;
     public static final double GATE_DOWN = 0.5;
-    public static boolean shooterReady = true;
+    public static boolean shooterReady = true, rapidReady = true;
     private double velocityLeft = 0.0, lastSpeedLeft = 0.0, velocityRight = 0.0, lastSpeedRight = 0.0;
     private long lastTime;
 
@@ -206,8 +206,14 @@ public class StrykeOpMode extends LinearOpMode {
             long delta = currentTime - lastTime;
             lastTime = currentTime;
 
-            velocityLeft = Range.clip(velocityLeft + (errorLeft * 5 * delta/1000), -1, 1);
-            velocityRight = Range.clip(velocityRight + (errorRight * 5 * delta/1000), -1, 1);
+//            if (targetLeft == 0)
+//                velocityLeft = Range.clip(velocityLeft + (errorLeft * 5 * delta/1000), -1, 1);
+//            else if (targetRight == 0)
+//                velocityRight = Range.clip(velocityRight + (errorRight * 5 * delta/1000), -1, 1);
+//            else {
+//                velocityRight = gamepad1.right_stick_y;
+//                velocityLeft = gamepad1.left_stick_y;
+//            }
 
 
             // Drive controls
@@ -219,8 +225,8 @@ public class StrykeOpMode extends LinearOpMode {
                 telemetry.addData("Voltage", driveVoltage);
             }
             else{
-                setDriveSpeed(scaleGamepadInput(-velocityLeft, 1),
-                        scaleGamepadInput(velocityRight, 1));
+                setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
+                        scaleGamepadInput(-gamepad1.right_stick_y, -1));
                 telemetry.addData("Voltage", driveVoltage);
             }
 
@@ -263,29 +269,32 @@ public class StrykeOpMode extends LinearOpMode {
             else gate.setPosition(GATE_UP);
 
             // rapid fire
-            //TODO: run the manipulator??
             if (gamepad2.right_trigger > 0.3) {
-//                manipulatorThread = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        manipulator.setPower(-1);
-//                    }
-//                });
-                while (gamepad2.right_trigger > 0.3) {
-                    manipulatorThread.start();
-                    shootBall();
-                    simpleWait(500);
-                    gate.setPosition(GATE_DOWN);
-                    simpleWait(500);
-                    gate.setPosition(GATE_UP);
-                    idle();
+                if(rapidReady) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            rapidReady = false;
+                            while (gamepad2.right_trigger > 0.3) {
+                                try {
+                                    shootBall();
+                                    simpleWait(500);
+                                    gate.setPosition(GATE_DOWN);
+                                    simpleWait(500);
+                                    gate.setPosition(GATE_UP);
+                                    simpleWait(700);
+                                    idle();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            rapidReady = true;
+                        }
+                    }).start();
                 }
             }
-//            else {
-//                if (manipulatorThread.isAlive())
-//                    stopManipulator();
-//
-//            }
+
 
             telemetry.update();
             idle();
@@ -293,10 +302,6 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
     }
 
-    public void stopManipulator() {
-        manipulatorThread = null;
-        // maybe just use manipulator.interrupt() instead of doing this?
-    }
 
     public void initHardware() {
         leftDrive1 = hardwareMap.dcMotor.get("l");
