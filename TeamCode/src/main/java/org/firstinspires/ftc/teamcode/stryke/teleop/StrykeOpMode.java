@@ -355,6 +355,7 @@ public class StrykeOpMode extends LinearOpMode {
     public void setMotorRunMode(DcMotor.RunMode runMode, DcMotor... motors){
         for(DcMotor motor : motors) {
             motor.setMode(runMode);
+            idle();
         }
     }
 
@@ -506,7 +507,7 @@ public class StrykeOpMode extends LinearOpMode {
         getGyro().calibrate();
         int dots = 0;
         long nextTime = System.currentTimeMillis() + 500;
-        while(getGyro().isCalibrating()){
+        while(getGyro().isCalibrating() && opModeIsActive()){
             if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
                 nextTime = System.currentTimeMillis() + 500;
                 String out = "Initializing gyro";

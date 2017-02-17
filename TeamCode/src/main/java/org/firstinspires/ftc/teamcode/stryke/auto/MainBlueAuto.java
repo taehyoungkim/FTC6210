@@ -21,7 +21,7 @@ public class MainBlueAuto extends StrykeAutonomous {
         telemetry.update();
 
         waitForStart();
-        getGyro().resetZAxisIntegrator();
+        //getGyro().resetZAxisIntegrator();
         simpleWait(200);
         runtime.reset();
 
