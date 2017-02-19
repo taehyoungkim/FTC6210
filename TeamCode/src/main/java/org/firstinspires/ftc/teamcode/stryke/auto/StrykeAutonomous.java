@@ -72,7 +72,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         setDriveSpeed(speed, -speed);
         int avg = getAverageEncoderPosition(motors);
-        while(avg <= pulses && opModeIsActive() && System.currentTimeMillis() < endTime) {
+        while(avg < pulses  && opModeIsActive() && System.currentTimeMillis() < endTime) {
             avg = getAverageEncoderPosition(motors);
             telemetry.addData("Target", pulses);
             telemetry.addData("Current", avg);
@@ -86,6 +86,28 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
+    public void encoderDriveBETA(double inches, double speed, double timeS, DcMotor... motors) {
+        double endTime = System.currentTimeMillis() + timeS * 1000;
+        if(motors.length == 0) motors = getDriveMotors();
+        int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
+        int offset = (Math.abs(leftDrive1.getCurrentPosition()) + Math.abs(rightDrive1.getCurrentPosition()))/2;
+        setDriveSpeed(speed, - speed);
+
+        while(Math.abs((Math.abs(leftDrive1.getCurrentPosition()) + Math.abs(rightDrive1.getCurrentPosition()))/2 - offset) < pulses){
+            if(isStopRequested()){
+                stopDriveMotors();
+                return;
+            }
+
+            telemetry.addData("Target", pulses);
+            telemetry.addData("Current", Math.abs((Math.abs(leftDrive1.getCurrentPosition()) + Math.abs(rightDrive1.getCurrentPosition())))/2 - offset);
+            telemetry.update();
+        }
+        stopDriveMotors();
+
+
+    }
+
     /*
     ==============================================
     ================HELPER METHODS================
@@ -95,12 +117,14 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void driveUntilStop(double speed) throws InterruptedException {
         setDriveSpeed(speed, -speed);
         double dist = wall.getDistance(DistanceUnit.CM);
+        long time = System.currentTimeMillis() + (long)(1.5 * 1e3);
         // change distance accordingly
-        while(dist > 6 && opModeIsActive()) {
+        while(time > System.currentTimeMillis() && opModeIsActive()) {
             if(isStopRequested()) return;
-            dist = wall.getDistance(DistanceUnit.CM);
-            telemetry.addData("dist", dist);
-            telemetry.update();
+//            dist = wall.getDistance(DistanceUnit.CM);
+//            telemetry.addData("dist", dist);
+//            telemetry.update();
+            statusTelemetry("Time: " + ((time - System.currentTimeMillis()) /1000.0));
         }
         stopDriveMotors();
     }

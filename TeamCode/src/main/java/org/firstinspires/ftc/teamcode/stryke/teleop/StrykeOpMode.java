@@ -507,7 +507,7 @@ public class StrykeOpMode extends LinearOpMode {
         getGyro().calibrate();
         int dots = 0;
         long nextTime = System.currentTimeMillis() + 500;
-        while(getGyro().isCalibrating() && opModeIsActive()){
+        while(getGyro().isCalibrating()){
             if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
                 nextTime = System.currentTimeMillis() + 500;
                 String out = "Initializing gyro";
@@ -522,6 +522,4 @@ public class StrykeOpMode extends LinearOpMode {
         telemetry.addData("Status", "Initialize done!");
         telemetry.update();
     }
-
-
 }
