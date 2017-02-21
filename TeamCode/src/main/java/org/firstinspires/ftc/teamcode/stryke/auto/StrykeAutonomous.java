@@ -117,7 +117,7 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void driveUntilStop(double speed) throws InterruptedException {
         setDriveSpeed(speed, -speed);
         double dist = wall.getDistance(DistanceUnit.CM);
-        long time = System.currentTimeMillis() + (long)(1.5 * 1e3);
+        long time = System.currentTimeMillis() + (long)(0.75 * 1e3);
         // change distance accordingly
         while(time > System.currentTimeMillis() && opModeIsActive()) {
             if(isStopRequested()) return;
@@ -209,12 +209,13 @@ public class StrykeAutonomous extends StrykeOpMode {
         statusTelemetry("Shooting 1st ball...");
         simpleWaitS(0.1);
         shootBall();
+        manipulator.setPower(0.7);
         statusTelemetry("Shooting 2nd ball...");
         simpleWaitS(0.5);
-        gate.setPosition(GATE_UP);
-        simpleWaitS(0.5);
         gate.setPosition(GATE_DOWN);
+        simpleWaitS(0.5);
+        gate.setPosition(GATE_UP);
         shootBall();
-
+        manipulator.setPower(0);
     }
 }

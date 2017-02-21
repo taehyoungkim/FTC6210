@@ -40,6 +40,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
@@ -115,7 +116,7 @@ public class FtcRobotControllerActivity extends Activity {
   protected ProgrammingModeController programmingModeController;
 
   protected UpdateUI.Callback callback;
-  protected Context context;
+  public static Context context;
   protected Utility utility;
   protected AppUtil appUtil = AppUtil.getInstance();
 

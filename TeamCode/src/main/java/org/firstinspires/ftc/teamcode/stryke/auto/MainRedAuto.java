@@ -1,6 +1,13 @@
 package org.firstinspires.ftc.teamcode.stryke.auto;
 
+import android.app.Activity;
+import android.content.Context;
+import android.hardware.SensorManager;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+
 
 @Autonomous(name = "Main RED Auto") //GEN3 FIELD
 public class MainRedAuto extends StrykeAutonomous {
@@ -22,10 +29,10 @@ public class MainRedAuto extends StrykeAutonomous {
         simpleWait(200);
         runtime.reset();
 
-        encoderDriveBETA(15 , speedFromVoltage() , 100,getDriveMotors());
+        encoderDriveBETA(15 , speedFromVoltage() , 100000,getDriveMotors());
 
         int heading = getGyro().getHeading();
-        setDriveSpeed(-0.45,-0.45);
+        setDriveSpeed(-0.4,-0.4);
         while((heading > 360 - 35 || heading < 90) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested()) return;
@@ -57,19 +64,19 @@ public class MainRedAuto extends StrykeAutonomous {
 
         heading = getGyro().getHeading();
         setDriveSpeed(-0.5, -0.5);
-        while (heading > 170) {
+        while (heading > 175) {
             heading = getGyro().getHeading();
             if(isStopRequested())
                 return;
         }
         stopDriveMotors();
 
-        encoderDriveBETA(18.5,0.5, 1000, getDriveMotors());
+        encoderDriveBETA(16 ,0.5, 1000, getDriveMotors());
         shootTwoBalls();
         manipulator.setPower(-0.5);
 
         
-        encoderDrive(30, 0.6, getDriveMotors());
+        encoderDriveBETA(25, 0.6, 5000, getDriveMotors());
         manipulator.setPower(0);
 
         statusTelemetry("Done with "+ (30 - runtime.seconds()) +" seconds left!");
@@ -77,20 +84,25 @@ public class MainRedAuto extends StrykeAutonomous {
 
     private void goToSecondBeacon() throws InterruptedException {
         int heading = getGyro().getHeading();
+        int start = heading;
+        int count = 0;
+        long failSafe = System.currentTimeMillis() + 500;
         setDriveSpeed(speedFromVoltage(), speedFromVoltage());
 
-        telemetry.addData("Heading", getGyro().getHeading());
-        telemetry.update();
-        while( heading < 343 && heading > 90){
+        while( heading < 343 && heading > 90 && opModeIsActive()){
             heading = getGyro().getHeading();
+//            if(start == heading) count ++;
+//            if(count >= 1000 && System.currentTimeMillis() > failSafe) requestOpModeStop();
+            telemetry.addData("Heading", heading);
+            telemetry.update();
             if(isStopRequested()) return;
         }
         stopDriveMotors();
 
-        encoderDriveBETA(24 * 3 - 30, 0.75,1000, getDriveMotors());
+        encoderDriveBETA(24 * 3 - 23, 0.6 ,1000, getDriveMotors());
 
         setDriveSpeed(-speedFromVoltage(), -speedFromVoltage());
-        while((heading > 283 || heading < 90) && opModeIsActive()) {
+        while((heading > 286 || heading < 90) && opModeIsActive()) {
             if(isStopRequested()) return;
             heading = getGyro().getHeading();
         }
@@ -109,7 +121,7 @@ public class MainRedAuto extends StrykeAutonomous {
     //Turn from vortex and line up with 1st beacon
     public void goToFirstBeacon(double speed) throws InterruptedException {
         statusTelemetry("Approaching...");
-        encoderDriveBETA(2.0 * 24 * Math.sqrt(2) - 10, speed + 1 , 2, getDriveMotors());
+        encoderDriveBETA(2.0 * 24 * Math.sqrt(2) - 13, speed + 0.1 , 2, getDriveMotors());
         stopDriveMotors();
         simpleWait(10);
 
@@ -126,28 +138,20 @@ public class MainRedAuto extends StrykeAutonomous {
     // Hit the beacon 2 times for now
     public void mashBeacon(boolean isLast) throws InterruptedException {
         statusTelemetry("Driving until 5cm");
-        driveUntilStop(0.33);
+        driveUntilStop(0.3);
         long refresh = System.currentTimeMillis() + 5000;
         //encoderDrive(2, -0.2);
         simpleWaitS(0.1);
         int blue = 0,  red = 0;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    encoderDrive(3,-0.5,1000,getDriveMotors());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
 
+        //back up a bit before sensing colors
+        encoderDriveBETA(6, -0.6, 1000, getDriveMotors());
         long endTime = System.currentTimeMillis() + 500;
         while(System.currentTimeMillis() < endTime && opModeIsActive()) {
-            if(rightColorSensor.red() > rightColorSensor.blue())
+            if(rightColorSensor.red() > rightColorSensor.blue()
+                    || leftColorSensor.red() > leftColorSensor.blue())
                 red ++;
             else blue ++;
-            //idle();
             if(isStopRequested())
                 return;
         }
@@ -157,7 +161,7 @@ public class MainRedAuto extends StrykeAutonomous {
         if(blue > red) {
             statusTelemetry("Backing away");
             simpleWaitS(0.05);
-            encoderDrive((12 - 3), -0.5,1000, getDriveMotors());
+            encoderDriveBETA((12 - 3), -0.5, 1000, getDriveMotors());
             stopDriveMotors();
 
             statusTelemetry("Waiting till end");
@@ -166,7 +170,7 @@ public class MainRedAuto extends StrykeAutonomous {
             }
 
             statusTelemetry("Driving until 5cm");
-            driveUntilStop(0.5);
+            driveUntilStop(0.4);
         }
 
         simpleWaitS(1);
@@ -175,7 +179,7 @@ public class MainRedAuto extends StrykeAutonomous {
         if (isLast)
             encoderDriveBETA(8, -0.5, 1000, getDriveMotors());
         else
-            encoderDriveBETA(12, -0.5, 1000, getDriveMotors());
+            encoderDriveBETA(10, -0.5, 1000, getDriveMotors());
         stopDriveMotors();
     }
 

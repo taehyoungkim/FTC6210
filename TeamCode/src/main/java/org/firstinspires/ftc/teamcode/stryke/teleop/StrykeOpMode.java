@@ -62,7 +62,7 @@ public class StrykeOpMode extends LinearOpMode {
     private long lastTime;
 
     public static double LIFT_SPEED = 1;
-    public static double SHOOTER_SPEED = 0.7;
+    public static double SHOOTER_SPEED = 0.6;
     public static double SLOW_MODE_SCALE = 0.6;
 
     public ElapsedTime runtime = new ElapsedTime();
@@ -270,28 +270,37 @@ public class StrykeOpMode extends LinearOpMode {
 
             // rapid fire
             if (gamepad2.right_trigger > 0.3) {
-                if(rapidReady) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            rapidReady = false;
-                            while (gamepad2.right_trigger > 0.3) {
-                                try {
-                                    shootBall();
-                                    simpleWait(500);
-                                    gate.setPosition(GATE_DOWN);
-                                    simpleWait(500);
-                                    gate.setPosition(GATE_UP);
-                                    simpleWait(700);
-                                    idle();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                            rapidReady = true;
-                        }
-                    }).start();
+//                if(rapidReady) {
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            rapidReady = false;
+//                            while (gamepad2.right_trigger > 0.3) {
+//                                try {
+//                                    shootBall();
+//                                    Thread.currentThread().sleep(500);
+//                                    gate.setPosition(GATE_DOWN);
+//                                    Thread.currentThread().sleep(1000);
+//                                    gate.setPosition(GATE_UP);
+//                                    Thread.currentThread().sleep(1000);
+//                                    idle();
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//
+//                            }
+//                            rapidReady = true;
+//                        }
+//                    }).start();
+//                }
+                while (gamepad2.right_trigger > 0.3) {
+                        shootBall();
+                        simpleWait(500);
+                        gate.setPosition(GATE_DOWN);
+                        simpleWait(500);
+                        gate.setPosition(GATE_UP);
+                        simpleWait(700);
+                        idle();
                 }
             }
 
