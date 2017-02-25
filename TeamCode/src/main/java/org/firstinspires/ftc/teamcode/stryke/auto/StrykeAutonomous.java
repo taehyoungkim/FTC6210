@@ -11,9 +11,8 @@ import org.firstinspires.ftc.teamcode.stryke.teleop.StrykeOpMode;
 
 public class StrykeAutonomous extends StrykeOpMode {
 
-    private static final int wheelDiam = 6;
-    private static final int encoderPPR = 7 * 40;
-    private ModernRoboticsI2cRangeSensor wall;
+    static final int wheelDiam = 6;
+    static final int encoderPPR = 7 * 40;
 
     @Override
     public void initHardware() {
@@ -24,12 +23,18 @@ public class StrykeAutonomous extends StrykeOpMode {
         leftDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        wall = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("wall"));
-
         huggerHolderLeft.setPosition(HUGGER_LEFT_DOWN);
         huggerHolderRight.setPosition(HUGGER_RIGHT_DOWN);
         leftColorSensor.enableLed(false);
         gate.setPosition(GATE_UP);
+
+        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
+        try {
+            simpleWait(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, getDriveMotors());
 
         telemetry.addData("Status", "Initialize done!");
         telemetry.update();
@@ -89,6 +94,15 @@ public class StrykeAutonomous extends StrykeOpMode {
     public void encoderDriveBETA(double inches, double speed, double timeS, DcMotor... motors) {
         double endTime = System.currentTimeMillis() + timeS * 1000;
         if(motors.length == 0) motors = getDriveMotors();
+
+//        setMotorRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER, getDriveMotors());
+//        try {
+//            simpleWait(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        setMotorRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER, getDriveMotors());
+
         int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
         int offset = (Math.abs(leftDrive1.getCurrentPosition()) + Math.abs(rightDrive1.getCurrentPosition()))/2;
         setDriveSpeed(speed, - speed);
@@ -116,8 +130,7 @@ public class StrykeAutonomous extends StrykeOpMode {
 
     public void driveUntilStop(double speed) throws InterruptedException {
         setDriveSpeed(speed, -speed);
-        double dist = wall.getDistance(DistanceUnit.CM);
-        long time = System.currentTimeMillis() + (long)(0.75 * 1e3);
+        long time = System.currentTimeMillis() + (long)(1 * 1e3);
         // change distance accordingly
         while(time > System.currentTimeMillis() && opModeIsActive()) {
             if(isStopRequested()) return;
@@ -129,8 +142,8 @@ public class StrykeAutonomous extends StrykeOpMode {
         stopDriveMotors();
     }
 
-    public int getDistance(int target, int current) {
-        int o = target - current;
+    public double getDistance(double target, double current) {
+        double o = target - current;
         return (((o + 180)) % 360) - 180;
     }
 
@@ -138,9 +151,9 @@ public class StrykeAutonomous extends StrykeOpMode {
         holdRotation(0.2, heading, 100000, true);
     }
 
-    public void holdRotation(double speed, int heading, double timeS, boolean stop) {
+    public void holdRotation(double speed, double heading, double timeS, boolean stop) {
         long endTime = (long) (System.currentTimeMillis() + timeS * 1000);
-        int error;
+        double error;
         double leftSpeed, rightSpeed;
         while(System.currentTimeMillis() < endTime && !isStopRequested()) {
             error = getDistance(heading, getGyro().getHeading());
@@ -163,26 +176,22 @@ public class StrykeAutonomous extends StrykeOpMode {
     }
 
     public void driveWithLock(double inches, double speed) {
-        int lock = getGyro().getHeading();
+        double lock = getGyro().getHeading();
         int pulses = (int) ((inches / (wheelDiam * Math.PI) * encoderPPR) * 1.6);
         int newLeft1Count = leftDrive1.getCurrentPosition() + pulses;
         int newRight1Count = rightDrive1.getCurrentPosition() + pulses;
-        int newLeft2Count = leftDrive2.getCurrentPosition() + pulses;
-        int newRight2Count = rightDrive2.getCurrentPosition() + pulses;
 
         setMotorRunMode(DcMotor.RunMode.RUN_TO_POSITION, getDriveMotors());
 
         leftDrive1.setTargetPosition(newLeft1Count);
         rightDrive1.setTargetPosition(newRight1Count);
-        leftDrive2.setTargetPosition(newLeft2Count);
-        rightDrive2.setTargetPosition(newRight2Count);
-        int error;
+        double error;
         double correction;
         double leftSpeed, rightSpeed;
         double max;
 
         setDriveSpeed(-speed, speed);
-        while(leftDrive1.isBusy() && leftDrive2.isBusy() && rightDrive2.isBusy() && rightDrive1.isBusy() && !isStopRequested()) {
+        while(leftDrive1.isBusy() && rightDrive1.isBusy() && !isStopRequested()) {
             error = getDistance(lock, getGyro().getHeading());
             correction = Range.clip(error * 0.005, -1 , 1);
 
@@ -209,7 +218,7 @@ public class StrykeAutonomous extends StrykeOpMode {
         statusTelemetry("Shooting 1st ball...");
         simpleWaitS(0.1);
         shootBall();
-        manipulator.setPower(0.7);
+        manipulator.setPower(-0.7);
         statusTelemetry("Shooting 2nd ball...");
         simpleWaitS(0.5);
         gate.setPosition(GATE_DOWN);

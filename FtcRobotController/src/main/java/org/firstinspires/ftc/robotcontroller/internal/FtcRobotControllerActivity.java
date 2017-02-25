@@ -116,7 +116,7 @@ public class FtcRobotControllerActivity extends Activity {
   protected ProgrammingModeController programmingModeController;
 
   protected UpdateUI.Callback callback;
-  public static Context context;
+  public  Context context;
   protected Utility utility;
   protected AppUtil appUtil = AppUtil.getInstance();
 

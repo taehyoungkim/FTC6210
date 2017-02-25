@@ -32,11 +32,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.stryke.teleop;
 
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -45,6 +47,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.teamcode.stryke.BreakBeamSensor;
 import org.firstinspires.ftc.teamcode.stryke.GamepadListener;
+import org.firstinspires.ftc.teamcode.stryke.auto.Gyroscope;
 
 @TeleOp(name="Main Tele-Op", group="Linear Opmode")
 public class StrykeOpMode extends LinearOpMode {
@@ -67,10 +70,10 @@ public class StrykeOpMode extends LinearOpMode {
 
     public ElapsedTime runtime = new ElapsedTime();
 
-    public DcMotor leftDrive1, leftDrive2, rightDrive1, rightDrive2;
+    public DcMotor leftDrive1, rightDrive1;
     public DcMotor lift1, lift2;
     public DcMotor shooter, manipulator;
-    public GyroSensor gyroSensor;
+    public Gyroscope gyroSensor;
     //public ModernRoboticsI2cRangeSensor leftRange, rightRange;
     public ColorSensor leftColorSensor, rightColorSensor;
     public Servo huggerHolderLeft, huggerHolderRight, gate;
@@ -79,6 +82,8 @@ public class StrykeOpMode extends LinearOpMode {
     public Thread shootingThread, manipulatorThread;
 
     boolean halfSpeed = false;
+
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -110,13 +115,13 @@ public class StrykeOpMode extends LinearOpMode {
             }
         });
 
-        gp1.setOnPressed(GamepadListener.Button.Y, new Runnable() {
-            @Override
-            public void run() {
-                if(debug)
-                    gyroSensor.resetZAxisIntegrator();
-            }
-        });
+//        gp1.setOnPressed(GamepadListener.Button.Y, new Runnable() {
+//            @Override
+//            public void run() {
+//                if(debug)
+//                    gyroSensor.resetZAxisIntegrator();
+//            }
+//        });
 
         gp1.setOnPressed(GamepadListener.Button.B, new Runnable() {
             @Override
@@ -168,7 +173,7 @@ public class StrykeOpMode extends LinearOpMode {
         stopDriveMotors();
 
         if(debug) {
-            calibrateGyro();
+            gyroSensor.calibrate();
         }
 
 
@@ -176,8 +181,8 @@ public class StrykeOpMode extends LinearOpMode {
         telemetry.update();
         waitForStart();
         runtime.reset();
-        if(debug)
-            gyroSensor.resetZAxisIntegrator();
+//        if(debug)
+//            gyroSensor.resetZAxisIntegrator();
 
         stopDriveMotors();
         lastTime = System.currentTimeMillis();
@@ -222,12 +227,10 @@ public class StrykeOpMode extends LinearOpMode {
                         scaleGamepadInput(-gamepad1.left_stick_y, SLOW_MODE_SCALE));
                 telemetry.addData("Reversed", "Yes!");
                 telemetry.addData("Speed" , SLOW_MODE_SCALE);
-                telemetry.addData("Voltage", driveVoltage);
             }
             else{
                 setDriveSpeed(scaleGamepadInput(-gamepad1.left_stick_y, 1),
                         scaleGamepadInput(-gamepad1.right_stick_y, -1));
-                telemetry.addData("Voltage", driveVoltage);
             }
 
 
@@ -314,13 +317,9 @@ public class StrykeOpMode extends LinearOpMode {
 
     public void initHardware() {
         leftDrive1 = hardwareMap.dcMotor.get("l");
-        leftDrive2 = hardwareMap.dcMotor.get("l2");
         leftDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        leftDrive2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive1 = hardwareMap.dcMotor.get("r");
-        rightDrive2 = hardwareMap.dcMotor.get("r2");
         rightDrive1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightDrive2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         lift1 = hardwareMap.dcMotor.get("lift1");
         lift2 = hardwareMap.dcMotor.get("lift2");
@@ -330,7 +329,8 @@ public class StrykeOpMode extends LinearOpMode {
         manipulator = hardwareMap.dcMotor.get("manip");
         manipulator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        gyroSensor = hardwareMap.gyroSensor.get("gyro");
+        gyroSensor = new Gyroscope("imu", this.hardwareMap);
+
         leftColorSensor = hardwareMap.colorSensor.get("left");
         leftColorSensor.setI2cAddress(I2cAddr.create8bit(0x2a));
         rightColorSensor = hardwareMap.colorSensor.get("right");
@@ -374,11 +374,11 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public void setRightDriveSpeed(double speed) {
-        setMotorSpeeds(speed, rightDrive1, rightDrive2);
+        setMotorSpeeds(speed, rightDrive1);
     }
 
     public void setLeftDriveSpeed(double speed) {
-        setMotorSpeeds(speed, leftDrive1, leftDrive2);
+        setMotorSpeeds(speed, leftDrive1);
     }
 
     public void setMotorSpeeds(double speed, DcMotor... motors) {
@@ -406,7 +406,7 @@ public class StrykeOpMode extends LinearOpMode {
     }
 
     public DcMotor[] getDriveMotors(){
-        return new DcMotor[]{leftDrive1, leftDrive2, rightDrive1, rightDrive2};
+        return new DcMotor[]{leftDrive1, rightDrive1};
     }
 
     // Servo Helper Methods
@@ -455,22 +455,7 @@ public class StrykeOpMode extends LinearOpMode {
             };
 
     private static long nextPoll = System.currentTimeMillis() + 1000;
-    private static double driveVoltage;
     public double scaleGamepadInput(double power, double scale){
-        // Scale gamepad joystick movement in a nonlinear fashion
-        if(Math.abs(power) <= 0.05)// Make sure joystick is actually being moved
-            return 0;
-        // clamp value between -1 and 1, the min and max values for joystick movement
-        if(System.currentTimeMillis() > nextPoll) {
-            driveVoltage = (hardwareMap.voltageSensor.get("l2 l").getVoltage() + hardwareMap.voltageSensor.get("r r1").getVoltage()) / 2;
-            nextPoll = System.currentTimeMillis() + 1000;
-        }
-
-        if(driveVoltage < 12 && !halfSpeed)
-            power = power * 1.15;
-        else if (driveVoltage < 13 && !halfSpeed)
-            power = power * 1.05;
-
         power = Range.clip(power, -1, 1);
         int index = (int) Range.clip((int) (Math.abs(power) * values.length-1), 0, values.length-1); // Clamp index between 0 and 16
         return power < 0 ? -values[index] * scale : values[index] * scale; // Return negative value if power is < 0
@@ -501,7 +486,7 @@ public class StrykeOpMode extends LinearOpMode {
         simpleWait((long) (seconds * 1000));
     }
 
-    public GyroSensor getGyro() {
+    public Gyroscope getGyro() {
         return gyroSensor;
     }
 
@@ -510,25 +495,25 @@ public class StrykeOpMode extends LinearOpMode {
         telemetry.update();
     }
 
-    public void calibrateGyro() {
-        telemetry.addData("Status", "Initializing gyro...");
-        telemetry.update();
-        getGyro().calibrate();
-        int dots = 0;
-        long nextTime = System.currentTimeMillis() + 500;
-        while(getGyro().isCalibrating()){
-            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
-                nextTime = System.currentTimeMillis() + 500;
-                String out = "Initializing gyro";
-                for(int i = 0; i < dots % 4; i ++)
-                    out += ".";
-                dots ++;
-                telemetry.addData("Status", out);
-                telemetry.update();
-            }
-            idle();
-        }
-        telemetry.addData("Status", "Initialize done!");
-        telemetry.update();
-    }
+//    public void calibrateGyro() {
+//        telemetry.addData("Status", "Initializing gyro...");
+//        telemetry.update();
+//        getGyro().calibrate();
+//        int dots = 0;
+//        long nextTime = System.currentTimeMillis() + 500;
+//        while(getGyro().isCalibrating()){
+//            if(System.currentTimeMillis() > nextTime) { // Display loading animation for drivers
+//                nextTime = System.currentTimeMillis() + 500;
+//                String out = "Initializing gyro";
+//                for(int i = 0; i < dots % 4; i ++)
+//                    out += ".";
+//                dots ++;
+//                telemetry.addData("Status", out);
+//                telemetry.update();
+//            }
+//            idle();
+//        }
+//        telemetry.addData("Status", "Initialize done!");
+//        telemetry.update();
+//    }
 }
