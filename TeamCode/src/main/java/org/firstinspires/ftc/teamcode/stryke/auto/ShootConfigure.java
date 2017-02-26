@@ -102,7 +102,7 @@ public class ShootConfigure extends StrykeAutonomous {
 
         double dist;
         if(far)
-            dist = 24 * 2 * Math.sqrt(2) + 5;
+            dist = 24 * 2 * Math.sqrt(2) - 15;
         else dist = 2 * 24 + 20;
 
         encoderDriveBETA(dist, speed, 1000, getDriveMotors());

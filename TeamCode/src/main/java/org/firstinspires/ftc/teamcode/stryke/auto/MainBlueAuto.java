@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name = "Main BLUE Auto") //GEN 3 FIELD
 public class MainBlueAuto extends StrykeAutonomous {
+    private double turnSpeed = 0.8;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -27,7 +28,7 @@ public class MainBlueAuto extends StrykeAutonomous {
         stopDriveMotors();
 
         double heading = getGyro().getHeading();
-        setDriveSpeed(1, 1);
+        setDriveSpeed(turnSpeed, turnSpeed);
         while((heading < 35 || heading > 180)  && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested()) return;
@@ -55,7 +56,7 @@ public class MainBlueAuto extends StrykeAutonomous {
 
 
         heading = getGyro().getHeading();
-        setDriveSpeed(1, 1);
+        setDriveSpeed(turnSpeed, turnSpeed);
         while (heading < 203) { // 200 kim why are you so good -- arib
             heading = getGyro().getHeading();
             if(isStopRequested())
@@ -78,7 +79,7 @@ public class MainBlueAuto extends StrykeAutonomous {
         statusTelemetry("Second!");
         simpleWaitS(0.5);
         double heading = getGyro().getHeading();
-        setDriveSpeed(-1, -1);
+        setDriveSpeed(-turnSpeed, -turnSpeed);
 
         while((heading > 20 && heading < 270)){
             heading = getGyro().getHeading();
@@ -88,7 +89,7 @@ public class MainBlueAuto extends StrykeAutonomous {
 
         encoderDriveBETA(24 * 3 - 30, 0.7, 1000,getDriveMotors());
 
-        setDriveSpeed(1, 1);
+        setDriveSpeed(turnSpeed, turnSpeed);
         while((heading < 68 || heading > 180)&& opModeIsActive()) {
             if(isStopRequested()) return;
             heading = getGyro().getHeading();
@@ -114,7 +115,7 @@ public class MainBlueAuto extends StrykeAutonomous {
         stopDriveMotors();
         simpleWaitS(0.05);
         double heading = gyroSensor.getHeading();
-        setDriveSpeed(1, 1);
+        setDriveSpeed(turnSpeed, turnSpeed);
         while((heading < 74) && opModeIsActive()) {
             heading = getGyro().getHeading();
             if(isStopRequested())
