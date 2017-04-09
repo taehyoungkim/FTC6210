@@ -103,7 +103,7 @@ public class ShootConfigure extends StrykeAutonomous {
         double dist;
         if(far)
             dist = 24 * 2 * Math.sqrt(2) - 15;
-        else dist = 2 * 24 + 20;
+        else dist = 2 * 24;
 
         encoderDriveBETA(dist, speed, 1000, getDriveMotors());
         simpleWaitS(0.2);
@@ -113,12 +113,10 @@ public class ShootConfigure extends StrykeAutonomous {
 
         if(hitCap || afterShoot == 1){ // Hitting cap OR parking
             if(afterShoot == 1) { // Park
-                manipulator.setPower(0.8);
                 encoderDriveBETA(10, speed, 1000, getDriveMotors());
                 simpleWaitS(1);
                 encoderDriveBETA(15, speed, 1000, getDriveMotors());
             } else { // Just hit cap
-                manipulator.setPower(0.8);
                 encoderDriveBETA(10, speed, 1000, getDriveMotors());
                 simpleWaitS(1);
                 encoderDriveBETA(10, -speed, 1000, getDriveMotors());
